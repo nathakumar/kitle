@@ -89,14 +89,30 @@ export function PreviewPanel({ files }: Props) {
                 "react-dom": "^18.2.0",
               },
             }}
+            style={{ height: "100%" }}
           >
-            <SandpackLayout style={{ height: "100%", border: "none", borderRadius: 0 }}>
+            <SandpackLayout
+              style={{
+                height: "100%",
+                width: "100%",
+                border: "none",
+                borderRadius: 0,
+                display: "flex",
+              }}
+            >
               {tab === "preview" ? (
-                <SandpackPreview style={{ height: "100%" }} showOpenInCodeSandbox={false} />
+                <SandpackPreview
+                  style={{ height: "100%", flex: 1, minWidth: 0 }}
+                  showOpenInCodeSandbox={false}
+                />
               ) : (
                 <>
-                  <SandpackFileExplorer style={{ height: "100%" }} />
-                  <SandpackCodeEditor style={{ height: "100%" }} showTabs showLineNumbers />
+                  <SandpackFileExplorer style={{ height: "100%", flexShrink: 0 }} />
+                  <SandpackCodeEditor
+                    style={{ height: "100%", flex: 1, minWidth: 0 }}
+                    showTabs
+                    showLineNumbers
+                  />
                 </>
               )}
             </SandpackLayout>
