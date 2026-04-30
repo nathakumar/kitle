@@ -142,3 +142,21 @@
     color: var(--color-foreground);
   }
 }
+
+/* Force Sandpack to fill its parent container */
+.sp-wrapper,
+.sp-layout,
+.sp-stack,
+.sp-preview,
+.sp-preview-container,
+.sp-code-editor,
+.sp-file-explorer {
+  height: 100% !important;
+  max-height: 100% !important;
+}
+
+.sp-preview-iframe {
+  height: 100% !important;
+  flex: 1 !important;
+}
+
