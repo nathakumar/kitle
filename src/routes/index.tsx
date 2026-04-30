@@ -179,6 +179,16 @@ function LandingPage() {
 
         {/* Example chips */}
         <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-2 sm:mt-8 sm:gap-3">
+          <button
+            onClick={() => setImportOpen(true)}
+            className="inline-flex items-center gap-2 rounded-full border border-foreground/30 bg-foreground/5 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-foreground/10 sm:px-5 sm:py-2.5 sm:text-sm"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 20h9" strokeLinecap="round" />
+              <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" strokeLinejoin="round" />
+            </svg>
+            Edit existing site
+          </button>
           {EXAMPLES.map((ex) => (
             <button
               key={ex.label}
@@ -190,6 +200,73 @@ function LandingPage() {
             </button>
           ))}
         </div>
+
+        {importOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur"
+            onClick={() => setImportOpen(false)}
+          >
+            <div
+              className="w-full max-w-xl rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Edit an existing website</h2>
+                <button
+                  onClick={() => setImportOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Paste a URL or the page HTML. We'll recreate it in React, then apply your changes.
+              </p>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">URL</label>
+              <input
+                type="url"
+                placeholder="https://example.com"
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                className="mb-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
+              />
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Or paste HTML</label>
+              <textarea
+                rows={5}
+                placeholder="<html>..."
+                value={importHtml}
+                onChange={(e) => setImportHtml(e.target.value)}
+                className="mb-3 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs focus:border-foreground/40 focus:outline-none"
+              />
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">What should we change? (optional)</label>
+              <textarea
+                rows={2}
+                placeholder="Modernize the design, add a pricing section, improve mobile…"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="mb-4 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
+              />
+              {importError && <p className="mb-3 text-xs text-red-400">{importError}</p>}
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setImportOpen(false)}
+                  className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitImport}
+                  disabled={importing}
+                  className="inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60"
+                >
+                  {importing ? <SpinnerIcon /> : null}
+                  {importing ? "Fetching…" : "Import & build"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Scroll cue */}
         <div className="mt-10 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-16 sm:text-[11px]">
