@@ -223,3 +223,32 @@
 }
 .builder-glow-border:focus-within::before { opacity: 1; }
 
+/* Bento reveal loader */
+@keyframes bento-reveal {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); filter: blur(4px); }
+  35%  { opacity: 1; transform: scale(1.08) rotate(0deg); filter: blur(0); }
+  60%  { opacity: 1; transform: scale(1) rotate(0deg); }
+  85%  { opacity: 0.25; transform: scale(0.85) rotate(4deg); filter: blur(2px); }
+  100% { opacity: 0; transform: scale(0.4) rotate(-8deg); filter: blur(4px); }
+}
+@keyframes bento-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 oklch(0.68 0.20 295 / 0); }
+  50%      { box-shadow: 0 0 24px 4px oklch(0.68 0.20 295 / 0.35); }
+}
+.bento-tile {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  opacity: 0;
+  transform-origin: center;
+  animation: bento-reveal 1.8s ease-in-out infinite, bento-pulse 1.8s ease-in-out infinite;
+}
+@media (min-width: 640px) {
+  .bento-tile { width: 72px; height: 72px; border-radius: 18px; }
+}
+.bento-tile-1 { background: oklch(0.55 0.14 295); animation-delay: 0s, 0s; }
+.bento-tile-2 { background: oklch(0.78 0.16 305); animation-delay: 0.18s, 0.18s; }
+.bento-tile-3 { background: oklch(0.65 0.24 295); animation-delay: 0.55s, 0.55s; }
+.bento-tile-4 { background: oklch(0.88 0.06 310); animation-delay: 0.36s, 0.36s; }
+

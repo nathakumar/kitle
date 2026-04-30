@@ -118,7 +118,7 @@ function BuilderPage() {
         }
       >
         <div className="h-full w-full">
-          <PreviewPanel files={files} />
+          <PreviewPanel files={files} isLoading={isLoading} />
         </div>
       </div>
     </main>
