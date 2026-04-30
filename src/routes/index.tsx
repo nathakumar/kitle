@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,21 +28,29 @@ const EXAMPLES = [
 ] as const;
 
 function LandingPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate({ from: "/" });
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const submittingRef = useRef(false);
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const go = (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || submitting) return;
+    if (!trimmed || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     // Navigate immediately — builder shows the user message + loader instantly.
-    void navigate({ to: "/builder", search: { prompt: trimmed } });
+    void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
+      submittingRef.current = false;
+      setSubmitting(false);
+      window.location.assign(`/builder?prompt=${encodeURIComponent(trimmed)}`);
+    });
   };
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
-    go(prompt);
+    const livePrompt = promptRef.current?.value ?? prompt;
+    go(livePrompt);
   };
 
   const submitExample = (text: string) => {
@@ -101,6 +109,8 @@ function LandingPage() {
           className="mx-auto mt-6 w-full max-w-3xl rounded-2xl border border-border bg-card/60 p-2 shadow-2xl backdrop-blur sm:mt-10 sm:rounded-3xl"
         >
           <textarea
+            ref={promptRef}
+            name="prompt"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKey}
