@@ -6,6 +6,7 @@ import { PreviewPanel } from "@/components/builder/PreviewPanel";
 import { generateProject } from "@/server/generate.functions";
 
 type BuilderSearch = { prompt?: string };
+type MobileView = "chat" | "preview";
 
 export const Route = createFileRoute("/builder")({
   validateSearch: (search: Record<string, unknown>): BuilderSearch => ({
