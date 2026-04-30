@@ -30,16 +30,24 @@ const EXAMPLES = [
 function LandingPage() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const go = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || submitting) return;
+    setSubmitting(true);
+    // Navigate immediately — builder shows the user message + loader instantly.
+    void navigate({ to: "/builder", search: { prompt: trimmed } });
+  };
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
-    const text = prompt.trim();
-    if (!text) return;
-    navigate({ to: "/builder", search: { prompt: text } });
+    go(prompt);
   };
 
   const submitExample = (text: string) => {
-    navigate({ to: "/builder", search: { prompt: text } });
+    setPrompt(text);
+    go(text);
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -115,10 +123,10 @@ function LandingPage() {
             <button
               type="submit"
               aria-label="Send"
-              disabled={!prompt.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-10 sm:w-10"
+              disabled={!prompt.trim() || submitting}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background shadow-md transition-all hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 disabled:hover:scale-100 sm:h-10 sm:w-10"
             >
-              <ArrowUpIcon />
+              {submitting ? <SpinnerIcon /> : <ArrowUpIcon />}
             </button>
           </div>
         </form>
@@ -233,6 +241,13 @@ function ArrowUpIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function SpinnerIcon() {
+  return (
+    <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <path d="M12 3a9 9 0 019 9" strokeLinecap="round" />
     </svg>
   );
 }
