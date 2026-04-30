@@ -105,6 +105,8 @@ function LandingPage() {
 
         {/* Prompt card */}
         <form
+          action="/builder"
+          method="get"
           onSubmit={submit}
           className="mx-auto mt-6 w-full max-w-3xl rounded-2xl border border-border bg-card/60 p-2 shadow-2xl backdrop-blur sm:mt-10 sm:rounded-3xl"
         >
@@ -133,7 +135,8 @@ function LandingPage() {
             <button
               type="submit"
               aria-label="Send"
-              disabled={!prompt.trim() || submitting}
+              aria-disabled={!prompt.trim() || submitting}
+              disabled={submitting}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background shadow-md transition-all hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 disabled:hover:scale-100 sm:h-10 sm:w-10"
             >
               {submitting ? <SpinnerIcon /> : <ArrowUpIcon />}
