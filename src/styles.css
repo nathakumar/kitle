@@ -98,7 +98,16 @@
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
+  --background: oklch(0.16 0.018 270);
+  --builder-surface: oklch(0.20 0.020 270);
+  --builder-surface-2: oklch(0.235 0.022 270);
+  --builder-elevated: oklch(0.27 0.025 270);
+  --builder-accent: oklch(0.68 0.20 295);
+  --builder-accent-2: oklch(0.72 0.18 330);
+  --gradient-builder: linear-gradient(135deg, oklch(0.68 0.20 295), oklch(0.72 0.18 330));
+  --gradient-glow: radial-gradient(60% 60% at 50% 0%, oklch(0.68 0.20 295 / 0.25), transparent 70%);
+  --shadow-glow: 0 10px 40px -12px oklch(0.68 0.20 295 / 0.45);
+  --shadow-soft: 0 1px 0 oklch(1 0 0 / 0.04) inset, 0 8px 24px -12px oklch(0 0 0 / 0.6);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
   --card-foreground: oklch(0.984 0.003 247.858);
