@@ -64,14 +64,25 @@ function BuilderPage() {
   return (
     <main className="dark flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
       {/* Mobile-only top bar with view switcher */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-card px-3 py-2 md:hidden">
-        <span className="text-xs font-semibold text-foreground">AI Builder</span>
-        <div className="inline-flex rounded-md border border-border bg-background p-0.5">
+      <div
+        className="flex shrink-0 items-center justify-between gap-2 border-b border-border/60 px-3 py-2 md:hidden"
+        style={{ background: "var(--builder-surface)" }}
+      >
+        <div className="flex items-center gap-2">
+          <div
+            className="flex h-6 w-6 items-center justify-center rounded-md text-white"
+            style={{ background: "var(--gradient-builder)" }}
+          >
+            <span className="text-[10px] font-bold">AI</span>
+          </div>
+          <span className="text-xs font-semibold text-foreground">Builder</span>
+        </div>
+        <div className="inline-flex rounded-lg border border-border/60 bg-background/40 p-0.5">
           <button
             onClick={() => setMobileView("chat")}
             className={
-              "rounded px-3 py-1 text-xs font-medium transition-colors " +
-              (mobileView === "chat" ? "bg-primary text-primary-foreground" : "text-muted-foreground")
+              "rounded-md px-3 py-1 text-[11px] font-medium transition-all " +
+              (mobileView === "chat" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground")
             }
           >
             Chat
@@ -80,8 +91,8 @@ function BuilderPage() {
             onClick={() => setMobileView("preview")}
             disabled={!hasFiles && !isLoading}
             className={
-              "rounded px-3 py-1 text-xs font-medium transition-colors disabled:opacity-40 " +
-              (mobileView === "preview" ? "bg-primary text-primary-foreground" : "text-muted-foreground")
+              "rounded-md px-3 py-1 text-[11px] font-medium transition-all disabled:opacity-40 " +
+              (mobileView === "preview" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground")
             }
           >
             Preview
@@ -91,7 +102,7 @@ function BuilderPage() {
 
       <div
         className={
-          "min-h-0 w-full md:w-[36%] md:min-w-[320px] md:max-w-[520px] " +
+          "min-h-0 w-full md:w-[38%] md:min-w-[340px] md:max-w-[520px] " +
           (mobileView === "chat" ? "flex flex-1" : "hidden md:flex")
         }
       >
