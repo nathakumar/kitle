@@ -1,58 +1,268 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ChatPanel, type ChatMessage } from "@/components/builder/ChatPanel";
-import { PreviewPanel } from "@/components/builder/PreviewPanel";
-import { generateProject } from "@/server/generate.functions";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AI App Builder — Prompt to React + Vite preview" },
+      { title: "AI App Builder — Idea to app in seconds" },
       {
         name: "description",
         content:
-          "Describe an app and instantly get a live React + Vite + TypeScript preview powered by AI. Iterate via chat.",
+          "Describe your idea and get a working React + Vite + TypeScript app with a live preview. Your personal full-stack engineer.",
+      },
+      { property: "og:title", content: "AI App Builder — Idea to app in seconds" },
+      {
+        property: "og:description",
+        content: "Describe your idea, get a working React + Vite app with live preview.",
       },
     ],
   }),
-  component: BuilderPage,
+  component: LandingPage,
 });
 
-function BuilderPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [files, setFiles] = useState<Record<string, string>>({});
-  const [isLoading, setIsLoading] = useState(false);
+const EXAMPLES = [
+  { label: "Remotion video", icon: "video" },
+  { label: "Bill splitter", icon: "calc" },
+  { label: "Markdown editor", icon: "edit" },
+  { label: "Expense tracker", icon: "wallet" },
+] as const;
 
-  const handleSend = async (text: string) => {
-    const userMsg: ChatMessage = { role: "user", content: text };
-    const nextMessages = [...messages, userMsg];
-    setMessages(nextMessages);
-    setIsLoading(true);
+function LandingPage() {
+  const navigate = useNavigate();
+  const [prompt, setPrompt] = useState("");
 
-    try {
-      const result = await generateProject({
-        data: { messages: nextMessages, currentFiles: files },
-      });
-      setFiles(result.files);
-      setMessages([...nextMessages, { role: "assistant", content: result.summary }]);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong.";
-      toast.error(msg);
-      setMessages([...nextMessages, { role: "assistant", content: `⚠️ ${msg}` }]);
-    } finally {
-      setIsLoading(false);
+  const submit = (e?: FormEvent) => {
+    e?.preventDefault();
+    const text = prompt.trim();
+    if (!text) return;
+    navigate({ to: "/builder", search: { prompt: text } });
+  };
+
+  const submitExample = (text: string) => {
+    navigate({ to: "/builder", search: { prompt: text } });
+  };
+
+  const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      submit();
     }
   };
 
   return (
-    <main className="dark flex h-screen w-screen overflow-hidden bg-background text-foreground">
-      <div className="w-[36%] min-w-[320px] max-w-[520px]">
-        <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
-      </div>
-      <div className="flex-1">
-        <PreviewPanel files={files} />
-      </div>
+    <main className="dark min-h-screen bg-background text-foreground">
+      {/* Top nav pill */}
+      <header className="px-4 pt-6">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between rounded-full border border-border bg-card/60 px-6 py-3 backdrop-blur">
+          <Link to="/" className="text-lg font-semibold tracking-tight">
+            nuvic
+          </Link>
+          <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+            <NavItem label="Product" />
+            <NavItem label="Use Cases" />
+            <NavItem label="Resources" />
+            <a href="#pricing" className="hover:text-foreground">Pricing</a>
+            <a href="#hire" className="hover:text-foreground">Hire</a>
+          </div>
+          <div className="flex items-center gap-2">
+            <IconButton aria-label="Language">
+              <GlobeIcon />
+            </IconButton>
+            <IconButton aria-label="Account">
+              <UserIcon />
+            </IconButton>
+            <IconButton aria-label="Menu">
+              <MenuIcon />
+            </IconButton>
+          </div>
+        </nav>
+      </header>
+
+      {/* Hero */}
+      <section className="px-4 pt-16 pb-10 sm:pt-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-7xl font-semibold tracking-tight sm:text-8xl">nuvic</h1>
+          <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+            Idea to app in seconds, with your personal full stack engineer
+          </p>
+        </div>
+
+        {/* Prompt card */}
+        <form
+          onSubmit={submit}
+          className="mx-auto mt-10 w-full max-w-3xl rounded-3xl border border-border bg-card/60 p-2 shadow-2xl backdrop-blur"
+        >
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={onKey}
+            rows={4}
+            placeholder="Build an app"
+            className="w-full resize-none bg-transparent px-5 pt-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+          />
+          <div className="flex items-center justify-between px-3 pb-2">
+            <div className="flex items-center gap-2">
+              <CircleButton aria-label="Attach">
+                <PaperclipIcon />
+              </CircleButton>
+              <CircleButton aria-label="Model">
+                <ChipIcon />
+              </CircleButton>
+              <CircleButton aria-label="Quick">
+                <BoltIcon />
+              </CircleButton>
+            </div>
+            <button
+              type="submit"
+              aria-label="Send"
+              disabled={!prompt.trim()}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              <ArrowUpIcon />
+            </button>
+          </div>
+        </form>
+
+        {/* Example chips */}
+        <div className="mx-auto mt-8 flex max-w-3xl flex-wrap items-center justify-center gap-3">
+          {EXAMPLES.map((ex) => (
+            <button
+              key={ex.label}
+              onClick={() => submitExample(ex.label)}
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card/40 px-5 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+            >
+              <ExampleIcon name={ex.icon} />
+              {ex.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Scroll cue */}
+        <div className="mt-16 flex flex-col items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          Scroll to explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </section>
     </main>
+  );
+}
+
+function NavItem({ label }: { label: string }) {
+  return (
+    <button className="inline-flex items-center gap-1 hover:text-foreground">
+      {label}
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+function IconButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+    >
+      {children}
+    </button>
+  );
+}
+
+function CircleButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      type="button"
+      {...props}
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/40 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    >
+      {children}
+    </button>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
+    </svg>
+  );
+}
+function UserIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 21a8 8 0 0116 0" strokeLinecap="round" />
+    </svg>
+  );
+}
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+    </svg>
+  );
+}
+function PaperclipIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M21 12.5l-8.5 8.5a5 5 0 01-7-7l9-9a3.5 3.5 0 015 5l-9 9a2 2 0 01-3-3l8-8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function ChipIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="6" y="6" width="12" height="12" rx="2" />
+      <rect x="9" y="9" width="6" height="6" rx="1" />
+      <path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3" strokeLinecap="round" />
+    </svg>
+  );
+}
+function BoltIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function ArrowUpIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function ExampleIcon({ name }: { name: string }) {
+  const common = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8 } as const;
+  if (name === "video")
+    return (
+      <svg {...common}>
+        <rect x="3" y="6" width="13" height="12" rx="2" />
+        <path d="M16 10l5-3v10l-5-3z" />
+      </svg>
+    );
+  if (name === "calc")
+    return (
+      <svg {...common}>
+        <rect x="5" y="3" width="14" height="18" rx="2" />
+        <path d="M8 7h8M8 11h2M12 11h2M16 11h.01M8 15h2M12 15h2M16 15h.01M8 19h2M12 19h2M16 19h.01" strokeLinecap="round" />
+      </svg>
+    );
+  if (name === "edit")
+    return (
+      <svg {...common}>
+        <path d="M12 20h9" strokeLinecap="round" />
+        <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" strokeLinejoin="round" />
+      </svg>
+    );
+  return (
+    <svg {...common}>
+      <rect x="3" y="6" width="18" height="13" rx="2" />
+      <path d="M3 10h18M16 15h2" strokeLinecap="round" />
+    </svg>
   );
 }
