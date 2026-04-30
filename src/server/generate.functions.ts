@@ -23,8 +23,21 @@ STRICT RULES:
 - /index.tsx must mount <App /> into #root using react-dom/client createRoot.
 - /index.html must contain <div id="root"></div> and <script type="module" src="/index.tsx"></script>.
 - Code must be production-quality, typed, and runnable with NO additional setup.
+
+PROJECT STRUCTURE — split code across MULTIPLE files, never cram everything into App.tsx:
+- Put each reusable UI component in its own file under "/components/ComponentName.tsx".
+- Put each page/screen/view in its own file under "/pages/PageName.tsx".
+- Put each custom hook in its own file under "/hooks/useThing.ts".
+- Put types in "/types.ts" and small utilities in "/lib/<name>.ts" when useful.
+- App.tsx should be a thin composition root that imports from the folders above.
+- Aim for at least 6–10 files for any non-trivial app, each focused and small.
+- Use relative imports like "./components/Header" — never "@/..." aliases.
+
+INCREMENTAL EDITS:
 - When the user asks for changes, MODIFY the existing files (provided as currentFiles) — keep the same file paths unless a new file is genuinely needed.
-- The "summary" field is a short (max 2 sentences) human-readable description of what changed or was built.`;
+- Always return the FULL set of files (every file the project needs to run), not just the changed ones.
+
+The "summary" field is a short (max 2 sentences) human-readable description of what changed or was built.`;
 
 export const generateProject = createServerFn({ method: "POST" })
   .inputValidator((input: GenerateInput) => {
