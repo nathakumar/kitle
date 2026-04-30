@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,21 +28,29 @@ const EXAMPLES = [
 ] as const;
 
 function LandingPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate({ from: "/" });
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const submittingRef = useRef(false);
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const go = (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || submitting) return;
+    if (!trimmed || submittingRef.current) return;
+    submittingRef.current = true;
     setSubmitting(true);
     // Navigate immediately — builder shows the user message + loader instantly.
-    void navigate({ to: "/builder", search: { prompt: trimmed } });
+    void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
+      submittingRef.current = false;
+      setSubmitting(false);
+      window.location.assign(`/builder?prompt=${encodeURIComponent(trimmed)}`);
+    });
   };
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
-    go(prompt);
+    const livePrompt = promptRef.current?.value ?? prompt;
+    go(livePrompt);
   };
 
   const submitExample = (text: string) => {
@@ -97,10 +105,14 @@ function LandingPage() {
 
         {/* Prompt card */}
         <form
+          action="/builder"
+          method="get"
           onSubmit={submit}
           className="mx-auto mt-6 w-full max-w-3xl rounded-2xl border border-border bg-card/60 p-2 shadow-2xl backdrop-blur sm:mt-10 sm:rounded-3xl"
         >
           <textarea
+            ref={promptRef}
+            name="prompt"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKey}
@@ -123,7 +135,8 @@ function LandingPage() {
             <button
               type="submit"
               aria-label="Send"
-              disabled={!prompt.trim() || submitting}
+              aria-disabled={!prompt.trim() || submitting}
+              disabled={submitting}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background shadow-md transition-all hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 disabled:hover:scale-100 sm:h-10 sm:w-10"
             >
               {submitting ? <SpinnerIcon /> : <ArrowUpIcon />}
