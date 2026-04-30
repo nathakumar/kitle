@@ -82,6 +82,7 @@ export const generateProject = createServerFn({ method: "POST" })
     const body = {
       model: "google/gemini-3-flash-preview",
       messages,
+      max_tokens: 16000,
       tools: [
         {
           type: "function",
