@@ -30,16 +30,24 @@ const EXAMPLES = [
 function LandingPage() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const go = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || submitting) return;
+    setSubmitting(true);
+    // Navigate immediately — builder shows the user message + loader instantly.
+    void navigate({ to: "/builder", search: { prompt: trimmed } });
+  };
 
   const submit = (e?: FormEvent) => {
     e?.preventDefault();
-    const text = prompt.trim();
-    if (!text) return;
-    navigate({ to: "/builder", search: { prompt: text } });
+    go(prompt);
   };
 
   const submitExample = (text: string) => {
-    navigate({ to: "/builder", search: { prompt: text } });
+    setPrompt(text);
+    go(text);
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
