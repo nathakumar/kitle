@@ -74,7 +74,14 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
           className="relative h-full w-full overflow-hidden rounded-xl border border-border/60"
           style={{ boxShadow: "var(--shadow-soft)", background: "var(--builder-surface)" }}
         >
-          {!hasFiles ? (
+          {showLoader ? (
+            <div
+              className="relative flex h-full w-full items-center justify-center"
+              style={{ background: "var(--builder-surface)" }}
+            >
+              <BentoLoader label={hasFiles ? "Updating your app" : "Generating your app"} />
+            </div>
+          ) : !hasFiles ? (
             <div className="relative flex h-full items-center justify-center p-8">
               <div
                 className="pointer-events-none absolute inset-0"
