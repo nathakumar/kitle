@@ -109,7 +109,7 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
             </div>
           ) : (
             <SandpackProvider
-              key={Object.keys(files).join("|")}
+              key={Object.keys(files).sort().join("|")}
               template="react-ts"
               files={files}
               theme="dark"
@@ -135,34 +135,49 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
                   background: "transparent",
                 }}
               >
-                {tab === "preview" ? (
+                {/* Keep BOTH mounted; toggle visibility so the preview iframe is not destroyed. */}
+                <div
+                  style={{
+                    display: tab === "preview" ? "flex" : "none",
+                    height: "100%",
+                    width: "100%",
+                    minWidth: 0,
+                  }}
+                >
                   <SandpackPreview
                     style={{ height: "100%", flex: 1, minWidth: 0 }}
                     showOpenInCodeSandbox={false}
+                    showRefreshButton
                   />
-                ) : (
-                  <div style={{ display: "flex", height: "100%", width: "100%", minWidth: 0 }}>
-                    <SandpackFileExplorer
-                      style={{
-                        height: "100%",
-                        flexShrink: 0,
-                        width: 220,
-                        minWidth: 180,
-                        borderRight: "1px solid var(--builder-elevated)",
-                        overflowY: "auto",
-                      }}
-                      autoHiddenFiles
-                    />
-                    <SandpackCodeEditor
-                      style={{ height: "100%", flex: 1, minWidth: 0 }}
-                      showTabs
-                      showLineNumbers
-                      showInlineErrors
-                      wrapContent
-                      closableTabs
-                    />
-                  </div>
-                )}
+                </div>
+                <div
+                  style={{
+                    display: tab === "code" ? "flex" : "none",
+                    height: "100%",
+                    width: "100%",
+                    minWidth: 0,
+                  }}
+                >
+                  <SandpackFileExplorer
+                    style={{
+                      height: "100%",
+                      flexShrink: 0,
+                      width: 220,
+                      minWidth: 180,
+                      borderRight: "1px solid var(--builder-elevated)",
+                      overflowY: "auto",
+                    }}
+                    autoHiddenFiles
+                  />
+                  <SandpackCodeEditor
+                    style={{ height: "100%", flex: 1, minWidth: 0 }}
+                    showTabs
+                    showLineNumbers
+                    showInlineErrors
+                    wrapContent
+                    closableTabs
+                  />
+                </div>
               </SandpackLayout>
             </SandpackProvider>
           )}
