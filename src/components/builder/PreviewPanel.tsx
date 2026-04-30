@@ -131,14 +131,27 @@ export function PreviewPanel({ files }: Props) {
                     showOpenInCodeSandbox={false}
                   />
                 ) : (
-                  <>
-                    <SandpackFileExplorer style={{ height: "100%", flexShrink: 0 }} />
+                  <div style={{ display: "flex", height: "100%", width: "100%", minWidth: 0 }}>
+                    <SandpackFileExplorer
+                      style={{
+                        height: "100%",
+                        flexShrink: 0,
+                        width: 220,
+                        minWidth: 180,
+                        borderRight: "1px solid var(--builder-elevated)",
+                        overflowY: "auto",
+                      }}
+                      autoHiddenFiles
+                    />
                     <SandpackCodeEditor
                       style={{ height: "100%", flex: 1, minWidth: 0 }}
                       showTabs
                       showLineNumbers
+                      showInlineErrors
+                      wrapContent
+                      closableTabs
                     />
-                  </>
+                  </div>
                 )}
               </SandpackLayout>
             </SandpackProvider>
