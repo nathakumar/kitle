@@ -52,9 +52,9 @@ function LandingPage() {
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       {/* Top nav pill */}
-      <header className="px-4 pt-6">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between rounded-full border border-border bg-card/60 px-6 py-3 backdrop-blur">
-          <Link to="/" className="text-lg font-semibold tracking-tight">
+      <header className="px-3 pt-4 sm:px-4 sm:pt-6">
+        <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 rounded-full border border-border bg-card/60 px-3 py-2 backdrop-blur sm:px-6 sm:py-3">
+          <Link to="/" className="text-base font-semibold tracking-tight sm:text-lg">
             nuvic
           </Link>
           <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
@@ -64,7 +64,7 @@ function LandingPage() {
             <a href="#pricing" className="hover:text-foreground">Pricing</a>
             <a href="#hire" className="hover:text-foreground">Hire</a>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <IconButton aria-label="Language">
               <GlobeIcon />
             </IconButton>
@@ -79,10 +79,10 @@ function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="px-4 pt-16 pb-10 sm:pt-24">
+      <section className="px-4 pt-10 pb-10 sm:pt-20">
         <div className="mx-auto max-w-3xl text-center">
-          <h1 className="text-7xl font-semibold tracking-tight sm:text-8xl">nuvic</h1>
-          <p className="mx-auto mt-6 max-w-xl text-base text-muted-foreground sm:text-lg">
+          <h1 className="text-5xl font-semibold tracking-tight sm:text-7xl md:text-8xl">nuvic</h1>
+          <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:mt-6 sm:text-lg">
             Idea to app in seconds, with your personal full stack engineer
           </p>
         </div>
@@ -90,18 +90,18 @@ function LandingPage() {
         {/* Prompt card */}
         <form
           onSubmit={submit}
-          className="mx-auto mt-10 w-full max-w-3xl rounded-3xl border border-border bg-card/60 p-2 shadow-2xl backdrop-blur"
+          className="mx-auto mt-6 w-full max-w-3xl rounded-2xl border border-border bg-card/60 p-2 shadow-2xl backdrop-blur sm:mt-10 sm:rounded-3xl"
         >
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKey}
-            rows={4}
+            rows={3}
             placeholder="Build an app"
-            className="w-full resize-none bg-transparent px-5 pt-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+            className="w-full resize-none bg-transparent px-3 pt-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5 sm:pt-4 sm:text-base"
           />
-          <div className="flex items-center justify-between px-3 pb-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 px-2 pb-1 sm:px-3 sm:pb-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
               <CircleButton aria-label="Attach">
                 <PaperclipIcon />
               </CircleButton>
@@ -116,7 +116,7 @@ function LandingPage() {
               type="submit"
               aria-label="Send"
               disabled={!prompt.trim()}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-10 sm:w-10"
             >
               <ArrowUpIcon />
             </button>
@@ -124,12 +124,12 @@ function LandingPage() {
         </form>
 
         {/* Example chips */}
-        <div className="mx-auto mt-8 flex max-w-3xl flex-wrap items-center justify-center gap-3">
+        <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-2 sm:mt-8 sm:gap-3">
           {EXAMPLES.map((ex) => (
             <button
               key={ex.label}
               onClick={() => submitExample(ex.label)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card/40 px-5 py-2.5 text-sm text-foreground transition-colors hover:bg-card"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-card/40 px-3 py-2 text-xs text-foreground transition-colors hover:bg-card sm:px-5 sm:py-2.5 sm:text-sm"
             >
               <ExampleIcon name={ex.icon} />
               {ex.label}
@@ -138,7 +138,7 @@ function LandingPage() {
         </div>
 
         {/* Scroll cue */}
-        <div className="mt-16 flex flex-col items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="mt-10 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-16 sm:text-[11px]">
           Scroll to explore
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
