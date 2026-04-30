@@ -123,10 +123,10 @@ function LandingPage() {
             <button
               type="submit"
               aria-label="Send"
-              disabled={!prompt.trim()}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition-opacity hover:opacity-90 disabled:opacity-40 sm:h-10 sm:w-10"
+              disabled={!prompt.trim() || submitting}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-foreground text-background shadow-md transition-all hover:scale-105 active:scale-95 disabled:bg-muted disabled:text-muted-foreground disabled:opacity-60 disabled:hover:scale-100 sm:h-10 sm:w-10"
             >
-              <ArrowUpIcon />
+              {submitting ? <SpinnerIcon /> : <ArrowUpIcon />}
             </button>
           </div>
         </form>
