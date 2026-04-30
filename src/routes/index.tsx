@@ -33,13 +33,17 @@ function LandingPage() {
   const submittingRef = useRef(false);
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [importHtml, setImportHtml] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const go = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || submittingRef.current) return;
     submittingRef.current = true;
     setSubmitting(true);
-    // Navigate immediately — builder shows the user message + loader instantly.
     void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
       submittingRef.current = false;
       setSubmitting(false);
@@ -63,6 +67,35 @@ function LandingPage() {
       e.preventDefault();
       submit();
     }
+  };
+
+  const submitImport = async () => {
+    setImportError(null);
+    let html = importHtml.trim();
+    const url = importUrl.trim();
+    if (!html && !url) {
+      setImportError("Paste a URL or HTML to continue.");
+      return;
+    }
+    if (!html && url) {
+      setImporting(true);
+      try {
+        const proxied = `https://r.jina.ai/${url.replace(/^https?:\/\//, "https://")}`;
+        const res = await fetch(proxied);
+        if (!res.ok) throw new Error(`Failed to fetch (${res.status})`);
+        html = await res.text();
+      } catch (err) {
+        setImporting(false);
+        setImportError(err instanceof Error ? err.message : "Failed to fetch URL.");
+        return;
+      }
+      setImporting(false);
+    }
+    const truncated = html.slice(0, 18000);
+    const userInstruction = prompt.trim() || "Recreate this website faithfully in React, then improve its design and structure while preserving content and brand.";
+    const finalPrompt = `${userInstruction}\n\n--- EXISTING SITE${url ? ` (${url})` : ""} ---\n${truncated}\n--- END ---`;
+    setImportOpen(false);
+    go(finalPrompt);
   };
 
   return (
