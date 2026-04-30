@@ -7,17 +7,20 @@ import {
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
 import { Code2, Eye, Sparkles } from "lucide-react";
+import { BentoLoader } from "./BentoLoader";
 
 interface Props {
   files: Record<string, string>;
+  isLoading?: boolean;
 }
 
 type Tab = "preview" | "code";
 
-export function PreviewPanel({ files }: Props) {
+export function PreviewPanel({ files, isLoading = false }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
 
   const hasFiles = Object.keys(files).length > 0;
+  const showLoader = isLoading && tab === "preview";
 
   return (
     <div
