@@ -6,65 +6,134 @@ import {
   SandpackCodeEditor,
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles } from "lucide-react";
+import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings } from "lucide-react";
+import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 
 interface Props {
   files: Record<string, string>;
   isLoading?: boolean;
+  /** Mobile-only: show a back button that switches to chat view */
+  onBack?: () => void;
+  /** Optional GitHub URL — falls back to opening github.com */
+  githubUrl?: string;
 }
 
 type Tab = "preview" | "code";
 
-export function PreviewPanel({ files, isLoading = false }: Props) {
+async function downloadAsZip(files: Record<string, string>) {
+  const zip = new JSZip();
+  Object.entries(files).forEach(([path, content]) => {
+    const clean = path.startsWith("/") ? path.slice(1) : path;
+    zip.file(clean, content);
+  });
+  const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lovable-project-${Date.now()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+export function PreviewPanel({ files, isLoading = false, onBack, githubUrl }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
 
   const hasFiles = Object.keys(files).length > 0;
   const showLoader = isLoading && tab === "preview";
+
+  const handleDownload = () => {
+    if (!hasFiles) return;
+    void downloadAsZip(files);
+  };
+
+  const handleGithub = () => {
+    window.open(githubUrl ?? "https://github.com", "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div
       className="flex h-full flex-col"
       style={{ background: "var(--builder-surface-2)" }}
     >
-      {/* Toolbar */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border/60 px-3 py-2">
-        <div className="flex items-center gap-2">
-          {/* macOS-style traffic lights */}
-          <div className="hidden items-center gap-1.5 pl-1 pr-2 sm:flex">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
-            <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
-          </div>
-          <div className="inline-flex rounded-lg border border-border/60 bg-background/40 p-0.5">
-            <button
-              onClick={() => setTab("preview")}
-              className={
-                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all " +
-                (tab === "preview"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground")
-              }
-            >
-              <Eye className="h-3 w-3" /> Preview
-            </button>
-            <button
-              onClick={() => setTab("code")}
-              className={
-                "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11px] font-medium transition-all " +
-                (tab === "code"
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:text-foreground")
-              }
-            >
-              <Code2 className="h-3 w-3" /> Code
-            </button>
-          </div>
+      {/* Toolbar — redesigned to match reference: back, pill toggle, actions */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-border/60 px-2 py-2 sm:px-3">
+        {/* Back (mobile only) */}
+        {onBack && (
+          <button
+            onClick={onBack}
+            aria-label="Back to chat"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70 md:hidden"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+        )}
+
+        {/* macOS-style traffic lights (desktop) */}
+        <div className="hidden items-center gap-1.5 pl-1 pr-1 md:flex">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
-        <div className="flex items-center gap-2">
-          <span className="hidden rounded-md border border-border/60 bg-background/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
+
+        {/* Centered pill toggle */}
+        <div className="mx-auto inline-flex rounded-full border border-border/60 bg-background/40 p-0.5 md:mx-0">
+          <button
+            onClick={() => setTab("preview")}
+            className={
+              "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
+              (tab === "preview"
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground hover:text-foreground")
+            }
+          >
+            {tab === "preview" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+            <Eye className="h-3 w-3 md:hidden" />
+            Preview
+          </button>
+          <button
+            onClick={() => setTab("code")}
+            className={
+              "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
+              (tab === "code"
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground hover:text-foreground")
+            }
+          >
+            <Code2 className="h-3 w-3 md:hidden" />
+            Code
+          </button>
+        </div>
+
+        {/* Right-side actions */}
+        <div className="ml-auto flex items-center gap-1.5">
+          <span className="hidden rounded-md border border-border/60 bg-background/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground lg:inline">
             {hasFiles ? `${Object.keys(files).length} files` : "Idle"}
           </span>
+          <button
+            onClick={handleGithub}
+            aria-label="Open on GitHub"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70"
+          >
+            <Github className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={handleDownload}
+            disabled={!hasFiles}
+            aria-label="Download project as ZIP"
+            title="Download project as ZIP"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Download className="h-3.5 w-3.5" />
+          </button>
+          <button
+            aria-label="Settings"
+            className="hidden h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70 sm:flex"
+          >
+            <Settings className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
 
@@ -100,11 +169,6 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
                 <p className="mt-1.5 text-xs text-muted-foreground">
                   Send a prompt on the left to scaffold a React + Vite project in seconds.
                 </p>
-                <div className="mt-5 flex justify-center gap-1">
-                  <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/40" style={{ animationDelay: "0ms" }} />
-                  <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/40" style={{ animationDelay: "150ms" }} />
-                  <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/40" style={{ animationDelay: "300ms" }} />
-                </div>
               </div>
             </div>
           ) : (
@@ -135,13 +199,14 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
                   background: "transparent",
                 }}
               >
-                {/* Keep BOTH mounted; toggle visibility so the preview iframe is not destroyed. */}
+                {/* Preview pane — kept mounted */}
                 <div
                   style={{
                     display: tab === "preview" ? "flex" : "none",
                     height: "100%",
                     width: "100%",
                     minWidth: 0,
+                    overflow: "auto",
                   }}
                 >
                   <SandpackPreview
@@ -150,6 +215,8 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
                     showRefreshButton
                   />
                 </div>
+
+                {/* Code pane — responsive: file explorer collapses on mobile, editor scrolls horizontally */}
                 <div
                   style={{
                     display: tab === "code" ? "flex" : "none",
@@ -157,26 +224,53 @@ export function PreviewPanel({ files, isLoading = false }: Props) {
                     width: "100%",
                     minWidth: 0,
                   }}
+                  className="flex-col sm:!flex-row"
                 >
-                  <SandpackFileExplorer
+                  <div className="hidden h-full sm:block" style={{ flexShrink: 0 }}>
+                    <SandpackFileExplorer
+                      style={{
+                        height: "100%",
+                        width: 220,
+                        minWidth: 180,
+                        borderRight: "1px solid var(--builder-elevated)",
+                        overflowY: "auto",
+                      }}
+                      autoHiddenFiles
+                    />
+                  </div>
+                  {/* Mobile-only condensed file explorer (top strip) */}
+                  <div
+                    className="block sm:hidden"
                     style={{
-                      height: "100%",
                       flexShrink: 0,
-                      width: 220,
-                      minWidth: 180,
-                      borderRight: "1px solid var(--builder-elevated)",
-                      overflowY: "auto",
+                      height: 140,
+                      borderBottom: "1px solid var(--builder-elevated)",
+                      overflow: "auto",
                     }}
-                    autoHiddenFiles
-                  />
-                  <SandpackCodeEditor
-                    style={{ height: "100%", flex: 1, minWidth: 0 }}
-                    showTabs
-                    showLineNumbers
-                    showInlineErrors
-                    wrapContent
-                    closableTabs
-                  />
+                  >
+                    <SandpackFileExplorer
+                      style={{ height: "100%", width: "100%" }}
+                      autoHiddenFiles
+                    />
+                  </div>
+                  <div
+                    style={{
+                      flex: 1,
+                      minWidth: 0,
+                      minHeight: 0,
+                      overflow: "auto",
+                    }}
+                    className="builder-scroll"
+                  >
+                    <SandpackCodeEditor
+                      style={{ height: "100%", minWidth: 0 }}
+                      showTabs
+                      showLineNumbers
+                      showInlineErrors
+                      wrapContent={false}
+                      closableTabs
+                    />
+                  </div>
                 </div>
               </SandpackLayout>
             </SandpackProvider>
