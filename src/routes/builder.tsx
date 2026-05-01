@@ -62,44 +62,7 @@ function BuilderPage() {
   const hasFiles = Object.keys(files).length > 0;
 
   return (
-    <main className="dark flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
-      {/* Mobile-only top bar with view switcher */}
-      <div
-        className="flex shrink-0 items-center justify-between gap-2 border-b border-border/60 px-3 py-2 md:hidden"
-        style={{ background: "var(--builder-surface)" }}
-      >
-        <div className="flex items-center gap-2">
-          <div
-            className="flex h-6 w-6 items-center justify-center rounded-md text-white"
-            style={{ background: "var(--gradient-builder)" }}
-          >
-            <span className="text-[10px] font-bold">AI</span>
-          </div>
-          <span className="text-xs font-semibold text-foreground">Builder</span>
-        </div>
-        <div className="inline-flex rounded-lg border border-border/60 bg-background/40 p-0.5">
-          <button
-            onClick={() => setMobileView("chat")}
-            className={
-              "rounded-md px-3 py-1 text-[11px] font-medium transition-all " +
-              (mobileView === "chat" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground")
-            }
-          >
-            Chat
-          </button>
-          <button
-            onClick={() => setMobileView("preview")}
-            disabled={!hasFiles && !isLoading}
-            className={
-              "rounded-md px-3 py-1 text-[11px] font-medium transition-all disabled:opacity-40 " +
-              (mobileView === "preview" ? "bg-foreground text-background shadow-sm" : "text-muted-foreground")
-            }
-          >
-            Preview
-          </button>
-        </div>
-      </div>
-
+    <main className="dark relative flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
       <div
         className={
           "min-h-0 w-full md:w-[38%] md:min-w-[340px] md:max-w-[520px] " +
@@ -118,7 +81,46 @@ function BuilderPage() {
         }
       >
         <div className="h-full w-full">
-          <PreviewPanel files={files} isLoading={isLoading} />
+          <PreviewPanel
+            files={files}
+            isLoading={isLoading}
+            onBack={() => setMobileView("chat")}
+          />
+        </div>
+      </div>
+
+      {/* Floating mobile bottom pill — Chat / Preview */}
+      <div
+        className="pointer-events-none fixed inset-x-0 bottom-3 z-50 flex justify-center md:hidden"
+      >
+        <div
+          className="pointer-events-auto inline-flex items-center rounded-full border border-border/60 p-1 shadow-2xl backdrop-blur-md"
+          style={{ background: "color-mix(in oklab, var(--builder-surface) 85%, transparent)" }}
+        >
+          <button
+            onClick={() => setMobileView("chat")}
+            className={
+              "inline-flex items-center gap-1.5 rounded-full px-5 py-1.5 text-[12px] font-medium transition-all " +
+              (mobileView === "chat"
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground")
+            }
+          >
+            Chat
+          </button>
+          <button
+            onClick={() => setMobileView("preview")}
+            disabled={!hasFiles && !isLoading}
+            className={
+              "inline-flex items-center gap-1.5 rounded-full px-5 py-1.5 text-[12px] font-medium transition-all disabled:opacity-40 " +
+              (mobileView === "preview"
+                ? "bg-foreground text-background shadow-sm"
+                : "text-muted-foreground")
+            }
+          >
+            {mobileView === "preview" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+            Preview
+          </button>
         </div>
       </div>
     </main>
