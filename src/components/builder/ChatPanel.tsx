@@ -80,28 +80,6 @@ export function ChatPanel({ messages, isLoading, onSend }: Props) {
 
       {/* Messages */}
       <div ref={scrollRef} className="builder-scroll relative flex-1 space-y-4 overflow-y-auto px-4 py-5">
-        {messages.length === 0 && !isLoading && (
-          <div className="space-y-3 pt-4">
-            <div className="text-center">
-              <h2 className="builder-gradient-text text-lg font-semibold">What should we build?</h2>
-              <p className="mt-1 text-xs text-muted-foreground">Pick a starter or describe your own.</p>
-            </div>
-            <div className="space-y-2">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => onSend(s)}
-                  className="group flex w-full items-center gap-2 rounded-xl border border-border/60 bg-background/40 px-3 py-2.5 text-left text-xs text-foreground/90 transition-all hover:border-border hover:bg-background/70 hover:translate-y-[-1px]"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
-                  <span>{s}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {messages.map((m, i) => {
           const isUser = m.role === "user";
           return (
