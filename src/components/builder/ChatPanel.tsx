@@ -51,7 +51,7 @@ export function ChatPanel({ messages, isLoading, onSend }: Props) {
 
   return (
     <div
-      className="relative flex h-full flex-col border-r border-border/60"
+      className="relative flex h-full flex-col-reverse border-r border-border/60 md:flex-col"
       style={{ background: "var(--builder-surface)" }}
     >
       {/* subtle top glow */}
