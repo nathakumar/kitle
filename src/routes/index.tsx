@@ -189,6 +189,16 @@ function LandingPage() {
             </svg>
             Edit existing site
           </button>
+          <Link
+            to="/analyze"
+            className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-primary/20 sm:px-5 sm:py-2.5 sm:text-sm"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M3 3v18h18" strokeLinecap="round" />
+              <path d="M7 14l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Analyze data
+          </Link>
           {EXAMPLES.map((ex) => (
             <button
               key={ex.label}
