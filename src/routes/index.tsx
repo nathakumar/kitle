@@ -426,6 +426,120 @@ function LandingPage() {
           </div>
         )}
 
+        {templatesOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-background/80 p-4 backdrop-blur"
+            onClick={() => setTemplatesOpen(false)}
+          >
+            <div
+              className="my-8 w-full max-w-5xl rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold sm:text-xl">Start from a template</h2>
+                  <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                    Pick a starting point. We'll generate a complete React frontend with full sections, components and responsive design.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setTemplatesOpen(false)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => pickTemplate(tpl)}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-border bg-background text-left transition-all hover:-translate-y-0.5 hover:border-foreground/40 hover:shadow-xl"
+                  >
+                    <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-border bg-muted">
+                      <iframe
+                        title={tpl.name}
+                        srcDoc={`<!doctype html><html><body style="margin:0;overflow:hidden">${tpl.preview}</body></html>`}
+                        sandbox=""
+                        className="pointer-events-none absolute inset-0 h-full w-full"
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold">{tpl.name}</span>
+                        <span className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {tpl.category}
+                        </span>
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tpl.description}</p>
+                      <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                        Use this template →
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {savedOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur"
+            onClick={() => setSavedOpen(false)}
+          >
+            <div
+              className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Saved projects</h2>
+                <button
+                  onClick={() => setSavedOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              {savedProjects.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No saved projects yet. Build something, then tap <b>Save</b> in the builder.
+                </p>
+              ) : (
+                <ul className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto">
+                  {savedProjects.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2"
+                    >
+                      <button
+                        onClick={() => openSavedProject(p.id)}
+                        className="flex-1 truncate text-left"
+                      >
+                        <div className="truncate text-sm font-medium">{p.name}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {new Date(p.savedAt).toLocaleString()}
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => deleteSavedProject(p.id)}
+                        className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label="Delete"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Scroll cue */}
         <div className="mt-10 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-16 sm:text-[11px]">
           Scroll to explore
