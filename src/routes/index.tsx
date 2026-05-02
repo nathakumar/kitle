@@ -152,6 +152,44 @@ function LandingPage() {
   const [importHtml, setImportHtml] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
+
+  useEffect(() => {
+    if (!savedOpen) return;
+    try {
+      const raw = localStorage.getItem("nuvic.savedProjects");
+      const list = raw ? JSON.parse(raw) : [];
+      setSavedProjects(list.map((p: { id: string; name: string; savedAt: number }) => ({ id: p.id, name: p.name, savedAt: p.savedAt })));
+    } catch {
+      setSavedProjects([]);
+    }
+  }, [savedOpen]);
+
+  const openSavedProject = (id: string) => {
+    setSavedOpen(false);
+    void navigate({ to: "/builder", search: { saved: id } }).catch(() => {
+      window.location.assign(`/builder?saved=${encodeURIComponent(id)}`);
+    });
+  };
+
+  const deleteSavedProject = (id: string) => {
+    try {
+      const raw = localStorage.getItem("nuvic.savedProjects");
+      const list = raw ? JSON.parse(raw) : [];
+      const next = list.filter((p: { id: string }) => p.id !== id);
+      localStorage.setItem("nuvic.savedProjects", JSON.stringify(next));
+      setSavedProjects(next.map((p: { id: string; name: string; savedAt: number }) => ({ id: p.id, name: p.name, savedAt: p.savedAt })));
+    } catch {
+      /* noop */
+    }
+  };
+
+  const pickTemplate = (tpl: Template) => {
+    setTemplatesOpen(false);
+    go(tpl.prompt);
+  };
 
   const go = (text: string) => {
     const trimmed = text.trim();
