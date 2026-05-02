@@ -112,6 +112,20 @@ function BuilderPage() {
         </div>
       </div>
 
+      {/* Floating Save button */}
+      <button
+        onClick={saveProject}
+        disabled={!hasFiles}
+        className="fixed right-3 top-3 z-50 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background disabled:opacity-40"
+        aria-label="Save project"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+          <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Save
+      </button>
+
       {/* Floating mobile bottom pill — Chat / Preview */}
       <div
         className="pointer-events-none fixed inset-x-0 bottom-3 z-50 flex justify-center md:hidden"
