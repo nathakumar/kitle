@@ -5,12 +5,13 @@ import { ChatPanel, type ChatMessage } from "@/components/builder/ChatPanel";
 import { PreviewPanel } from "@/components/builder/PreviewPanel";
 import { generateProject } from "@/server/generate.functions";
 
-type BuilderSearch = { prompt?: string };
+type BuilderSearch = { prompt?: string; saved?: string };
 type MobileView = "chat" | "preview";
 
 export const Route = createFileRoute("/builder")({
   validateSearch: (search: Record<string, unknown>): BuilderSearch => ({
     prompt: typeof search.prompt === "string" ? search.prompt : undefined,
+    saved: typeof search.saved === "string" ? search.saved : undefined,
   }),
   head: () => ({
     meta: [
