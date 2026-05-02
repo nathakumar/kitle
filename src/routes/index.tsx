@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,6 +27,120 @@ const EXAMPLES = [
   { label: "Expense tracker", icon: "wallet" },
 ] as const;
 
+type Template = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  preview: string;
+  prompt: string;
+};
+
+const TEMPLATES: Template[] = [
+  {
+    id: "saas-landing",
+    name: "SaaS Landing Page",
+    category: "Marketing",
+    description: "Modern hero, features grid, pricing tiers, testimonials and CTA.",
+    preview: `<div style="font-family:Inter,system-ui;background:linear-gradient(180deg,#0b0f1a,#111827);color:#fff;padding:18px;height:100%">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px"><b>◆ Acme</b><span style="opacity:.6">Login</span></div>
+      <div style="margin-top:24px;text-align:center">
+        <div style="font-size:20px;font-weight:700;letter-spacing:-.02em">Ship faster with Acme</div>
+        <div style="font-size:9px;opacity:.6;margin-top:6px">All-in-one platform for modern teams</div>
+        <div style="margin-top:10px;display:inline-block;background:#6366f1;padding:5px 12px;border-radius:999px;font-size:9px">Get started →</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:18px">
+        ${[1,2,3].map(()=>`<div style="background:#1f2937;border-radius:8px;padding:8px;font-size:8px"><div style="width:14px;height:14px;background:#6366f1;border-radius:4px;margin-bottom:4px"></div>Feature</div>`).join("")}
+      </div>
+    </div>`,
+    prompt:
+      "Build a polished modern SaaS landing page in React with: a sticky glassmorphism nav, a bold hero section with gradient headline and dual CTAs, a logo cloud, a 6-card feature grid with icons, a 3-column step-by-step 'How it works' section, social proof testimonials carousel, a 3-tier pricing table with a featured plan, an FAQ accordion, a final CTA banner, and a multi-column footer. Use semantic tokens, smooth scroll animations, and full responsive layout.",
+  },
+  {
+    id: "portfolio",
+    name: "Personal Portfolio",
+    category: "Portfolio",
+    description: "Bold typography, project gallery, about, skills, contact form.",
+    preview: `<div style="font-family:Inter,system-ui;background:#fafaf9;color:#111;padding:18px;height:100%">
+      <div style="display:flex;justify-content:space-between;font-size:10px"><b>Jane Doe</b><span>Work · About · Contact</span></div>
+      <div style="margin-top:22px"><div style="font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1">Designer building<br/>thoughtful products.</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:18px">
+        <div style="background:#e7e5e4;height:50px;border-radius:8px"></div>
+        <div style="background:#fef3c7;height:50px;border-radius:8px"></div>
+        <div style="background:#dbeafe;height:50px;border-radius:8px"></div>
+        <div style="background:#fce7f3;height:50px;border-radius:8px"></div>
+      </div>
+    </div>`,
+    prompt:
+      "Build a striking personal portfolio website in React with: a minimalist nav, a huge serif/display hero introducing the person with an animated marquee of skills, an about section with a portrait placeholder and bio, a curated project case-study grid (6 projects with hover reveal), a skills/tech stack section, a testimonials section, a contact form, and a footer with social links. Use elegant typography, generous whitespace, smooth scroll reveals, and full responsiveness.",
+  },
+  {
+    id: "ecommerce",
+    name: "E-commerce Storefront",
+    category: "Shop",
+    description: "Product grid, hero banner, categories, cart preview, footer.",
+    preview: `<div style="font-family:Inter,system-ui;background:#fff;color:#111;padding:14px;height:100%">
+      <div style="display:flex;justify-content:space-between;font-size:10px;border-bottom:1px solid #eee;padding-bottom:8px"><b>SHOP</b><span>🔍 ♡ 🛒</span></div>
+      <div style="margin-top:10px;background:linear-gradient(135deg,#fde68a,#f59e0b);border-radius:12px;padding:14px;color:#111"><b style="font-size:13px">Summer Sale -40%</b></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">
+        ${[1,2,3,4,5,6].map((i)=>`<div><div style="background:#f3f4f6;height:36px;border-radius:6px"></div><div style="font-size:8px;margin-top:3px">Item ${i}</div><div style="font-size:8px;font-weight:700">$${i*9}</div></div>`).join("")}
+      </div>
+    </div>`,
+    prompt:
+      "Build a beautiful e-commerce storefront in React with: a top promo bar, a header with logo, search, account and cart icons, a hero banner with a featured promotion, a horizontal category pill nav, a 'New arrivals' product grid (8 products with image, name, price, hover quick-add), a 'Shop by category' tile section, a curated collection feature row, customer reviews, a newsletter signup, and a rich footer. Use clean retail aesthetics, hover effects, and full responsive layout.",
+  },
+  {
+    id: "dashboard",
+    name: "Analytics Dashboard",
+    category: "App",
+    description: "Sidebar, KPI cards, charts, recent activity table.",
+    preview: `<div style="font-family:Inter,system-ui;background:#0f172a;color:#fff;padding:0;height:100%;display:flex">
+      <div style="width:48px;background:#020617;padding:8px;font-size:9px">▦<br/><br/>◉<br/><br/>♛</div>
+      <div style="flex:1;padding:10px">
+        <div style="font-size:11px;font-weight:700">Dashboard</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px">
+          ${["12.4k","$48k","94%"].map(v=>`<div style="background:#1e293b;border-radius:6px;padding:6px;font-size:8px"><div style="opacity:.6">Metric</div><b style="font-size:11px">${v}</b></div>`).join("")}
+        </div>
+        <div style="background:#1e293b;border-radius:6px;height:50px;margin-top:6px;padding:6px;font-size:8px">📈 Chart</div>
+      </div>
+    </div>`,
+    prompt:
+      "Build a sophisticated analytics dashboard in React with: a collapsible sidebar nav with icons and labels, a top bar with search and user menu, a row of 4 KPI stat cards with sparklines and delta indicators, a large area chart for revenue over time, a bar chart for traffic sources, a donut chart for user breakdown, a recent transactions table with status badges and pagination, and a notifications panel. Use a polished dark theme, recharts for visualizations, and a responsive grid layout.",
+  },
+  {
+    id: "blog",
+    name: "Magazine Blog",
+    category: "Content",
+    description: "Featured story, article grid, categories, newsletter.",
+    preview: `<div style="font-family:Georgia,serif;background:#fffbeb;color:#1c1917;padding:14px;height:100%">
+      <div style="text-align:center;border-bottom:2px solid #1c1917;padding-bottom:6px;font-size:14px;font-weight:700;letter-spacing:.2em">THE DAILY</div>
+      <div style="margin-top:10px"><div style="background:#e7e5e4;height:40px;border-radius:4px"></div><div style="font-size:11px;font-weight:700;margin-top:4px;line-height:1.2">The future of independent publishing</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;font-size:9px">
+        <div><div style="background:#d6d3d1;height:24px;border-radius:3px"></div><div style="margin-top:2px">Article one headline</div></div>
+        <div><div style="background:#d6d3d1;height:24px;border-radius:3px"></div><div style="margin-top:2px">Article two headline</div></div>
+      </div>
+    </div>`,
+    prompt:
+      "Build an editorial magazine-style blog in React with: a centered masthead with serif typography, a horizontal category nav, a large featured story hero with image, category badge, headline, dek and byline, a 3-column 'Latest stories' grid (9 articles), a 'Most read' sidebar list, a topic-organized 'Sections' area, a newsletter signup band, and an elegant footer. Use serif headlines, sans-serif body, generous typography hierarchy, and responsive layout.",
+  },
+  {
+    id: "restaurant",
+    name: "Restaurant Site",
+    category: "Hospitality",
+    description: "Hero, menu sections, gallery, reservation, location.",
+    preview: `<div style="font-family:Georgia,serif;background:#1c1917;color:#fef3c7;padding:14px;height:100%">
+      <div style="text-align:center;font-size:9px;letter-spacing:.3em;opacity:.7">EST. 2014</div>
+      <div style="text-align:center;font-size:22px;font-weight:700;margin-top:4px;font-style:italic">Maison</div>
+      <div style="text-align:center;font-size:9px;opacity:.7;margin-top:4px">Seasonal · French · Tasting menu</div>
+      <div style="margin-top:14px;border-top:1px solid #44403c;border-bottom:1px solid #44403c;padding:8px 0;font-size:9px;display:flex;justify-content:space-between"><span>Beef tartare</span><span>· · · ·</span><span>$24</span></div>
+      <div style="font-size:9px;display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #44403c"><span>Duck confit</span><span>· · · ·</span><span>$32</span></div>
+    </div>`,
+    prompt:
+      "Build an elegant restaurant website in React with: a full-bleed hero with restaurant name in display serif, tagline and CTA to reserve, an 'Our story' section with image, a beautifully typeset menu section (Starters / Mains / Desserts / Drinks) with dotted price leaders, a photo gallery grid, a chef profile, a reservation form, a location & hours panel with embedded-map placeholder, and a footer with social links. Use warm sophisticated colors, serif/sans pairing, and responsive layout.",
+  },
+];
+
+
 function LandingPage() {
   const navigate = useNavigate({ from: "/" });
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -38,6 +152,44 @@ function LandingPage() {
   const [importHtml, setImportHtml] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
+
+  useEffect(() => {
+    if (!savedOpen) return;
+    try {
+      const raw = localStorage.getItem("nuvic.savedProjects");
+      const list = raw ? JSON.parse(raw) : [];
+      setSavedProjects(list.map((p: { id: string; name: string; savedAt: number }) => ({ id: p.id, name: p.name, savedAt: p.savedAt })));
+    } catch {
+      setSavedProjects([]);
+    }
+  }, [savedOpen]);
+
+  const openSavedProject = (id: string) => {
+    setSavedOpen(false);
+    void navigate({ to: "/builder", search: { saved: id } }).catch(() => {
+      window.location.assign(`/builder?saved=${encodeURIComponent(id)}`);
+    });
+  };
+
+  const deleteSavedProject = (id: string) => {
+    try {
+      const raw = localStorage.getItem("nuvic.savedProjects");
+      const list = raw ? JSON.parse(raw) : [];
+      const next = list.filter((p: { id: string }) => p.id !== id);
+      localStorage.setItem("nuvic.savedProjects", JSON.stringify(next));
+      setSavedProjects(next.map((p: { id: string; name: string; savedAt: number }) => ({ id: p.id, name: p.name, savedAt: p.savedAt })));
+    } catch {
+      /* noop */
+    }
+  };
+
+  const pickTemplate = (tpl: Template) => {
+    setTemplatesOpen(false);
+    go(tpl.prompt);
+  };
 
   const go = (text: string) => {
     const trimmed = text.trim();
@@ -107,6 +259,9 @@ function LandingPage() {
             nuvic
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <IconButton aria-label="Saved projects" onClick={() => setSavedOpen(true)}>
+              <FolderIcon />
+            </IconButton>
             <IconButton aria-label="Language">
               <GlobeIcon />
             </IconButton>
@@ -154,8 +309,8 @@ function LandingPage() {
               <CircleButton aria-label="Model">
                 <ChipIcon />
               </CircleButton>
-              <CircleButton aria-label="Quick">
-                <BoltIcon />
+              <CircleButton aria-label="Templates" onClick={() => setTemplatesOpen(true)}>
+                <TemplatesIcon />
               </CircleButton>
             </div>
             <button
@@ -267,6 +422,120 @@ function LandingPage() {
                   {importing ? "Fetching…" : "Import & build"}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {templatesOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-background/80 p-4 backdrop-blur"
+            onClick={() => setTemplatesOpen(false)}
+          >
+            <div
+              className="my-8 w-full max-w-5xl rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold sm:text-xl">Start from a template</h2>
+                  <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                    Pick a starting point. We'll generate a complete React frontend with full sections, components and responsive design.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setTemplatesOpen(false)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {TEMPLATES.map((tpl) => (
+                  <button
+                    key={tpl.id}
+                    onClick={() => pickTemplate(tpl)}
+                    className="group flex flex-col overflow-hidden rounded-xl border border-border bg-background text-left transition-all hover:-translate-y-0.5 hover:border-foreground/40 hover:shadow-xl"
+                  >
+                    <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-border bg-muted">
+                      <iframe
+                        title={tpl.name}
+                        srcDoc={`<!doctype html><html><body style="margin:0;overflow:hidden">${tpl.preview}</body></html>`}
+                        sandbox=""
+                        className="pointer-events-none absolute inset-0 h-full w-full"
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-semibold">{tpl.name}</span>
+                        <span className="rounded-full border border-border px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                          {tpl.category}
+                        </span>
+                      </div>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tpl.description}</p>
+                      <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100">
+                        Use this template →
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {savedOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur"
+            onClick={() => setSavedOpen(false)}
+          >
+            <div
+              className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Saved projects</h2>
+                <button
+                  onClick={() => setSavedOpen(false)}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              {savedProjects.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No saved projects yet. Build something, then tap <b>Save</b> in the builder.
+                </p>
+              ) : (
+                <ul className="flex max-h-[60vh] flex-col gap-2 overflow-y-auto">
+                  {savedProjects.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2"
+                    >
+                      <button
+                        onClick={() => openSavedProject(p.id)}
+                        className="flex-1 truncate text-left"
+                      >
+                        <div className="truncate text-sm font-medium">{p.name}</div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {new Date(p.savedAt).toLocaleString()}
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => deleteSavedProject(p.id)}
+                        className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label="Delete"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                          <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         )}
@@ -404,6 +673,24 @@ function ExampleIcon({ name }: { name: string }) {
     <svg {...common}>
       <rect x="3" y="6" width="18" height="13" rx="2" />
       <path d="M3 10h18M16 15h2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function TemplatesIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <rect x="3" y="3" width="7" height="9" rx="1.5" />
+      <rect x="14" y="3" width="7" height="5" rx="1.5" />
+      <rect x="14" y="12" width="7" height="9" rx="1.5" />
+      <rect x="3" y="16" width="7" height="5" rx="1.5" />
     </svg>
   );
 }

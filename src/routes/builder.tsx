@@ -5,12 +5,13 @@ import { ChatPanel, type ChatMessage } from "@/components/builder/ChatPanel";
 import { PreviewPanel } from "@/components/builder/PreviewPanel";
 import { generateProject } from "@/server/generate.functions";
 
-type BuilderSearch = { prompt?: string };
+type BuilderSearch = { prompt?: string; saved?: string };
 type MobileView = "chat" | "preview";
 
 export const Route = createFileRoute("/builder")({
   validateSearch: (search: Record<string, unknown>): BuilderSearch => ({
     prompt: typeof search.prompt === "string" ? search.prompt : undefined,
+    saved: typeof search.saved === "string" ? search.saved : undefined,
   }),
   head: () => ({
     meta: [
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/builder")({
 });
 
 function BuilderPage() {
-  const { prompt } = Route.useSearch();
+  const { prompt, saved } = Route.useSearch();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [files, setFiles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -52,14 +53,57 @@ function BuilderPage() {
   };
 
   useEffect(() => {
-    if (prompt && !initialFired.current) {
+    if (initialFired.current) return;
+    if (saved) {
+      initialFired.current = true;
+      try {
+        const raw = localStorage.getItem("nuvic.savedProjects");
+        const list = raw ? JSON.parse(raw) : [];
+        const found = list.find((p: { id: string }) => p.id === saved);
+        if (found) {
+          setMessages(found.messages || []);
+          setFiles(found.files || {});
+          setMobileView("preview");
+          toast.success(`Loaded "${found.name}"`);
+          return;
+        }
+        toast.error("Saved project not found");
+      } catch {
+        toast.error("Could not load saved project");
+      }
+      return;
+    }
+    if (prompt) {
       initialFired.current = true;
       handleSend(prompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prompt]);
+  }, [prompt, saved]);
 
   const hasFiles = Object.keys(files).length > 0;
+
+  const saveProject = () => {
+    if (!hasFiles) {
+      toast.error("Nothing to save yet — generate something first.");
+      return;
+    }
+    const defaultName =
+      messages.find((m) => m.role === "user")?.content.slice(0, 60) ||
+      `Project ${new Date().toLocaleString()}`;
+    const name = window.prompt("Name this project:", defaultName)?.trim();
+    if (!name) return;
+    try {
+      const key = "nuvic.savedProjects";
+      const raw = localStorage.getItem(key);
+      const list: Array<{ id: string; name: string; savedAt: number; messages: ChatMessage[]; files: Record<string, string> }> =
+        raw ? JSON.parse(raw) : [];
+      list.unshift({ id: crypto.randomUUID(), name, savedAt: Date.now(), messages, files });
+      localStorage.setItem(key, JSON.stringify(list.slice(0, 30)));
+      toast.success("Project saved");
+    } catch {
+      toast.error("Could not save (storage full?)");
+    }
+  };
 
   return (
     <main className="dark relative flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
@@ -88,6 +132,20 @@ function BuilderPage() {
           />
         </div>
       </div>
+
+      {/* Floating Save button */}
+      <button
+        onClick={saveProject}
+        disabled={!hasFiles}
+        className="fixed right-3 top-3 z-50 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background disabled:opacity-40"
+        aria-label="Save project"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+          <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        Save
+      </button>
 
       {/* Floating mobile bottom pill — Chat / Preview */}
       <div
