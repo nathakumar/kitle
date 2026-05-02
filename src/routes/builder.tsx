@@ -23,7 +23,7 @@ export const Route = createFileRoute("/builder")({
 });
 
 function BuilderPage() {
-  const { prompt } = Route.useSearch();
+  const { prompt, saved } = Route.useSearch();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [files, setFiles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
