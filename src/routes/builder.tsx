@@ -53,12 +53,32 @@ function BuilderPage() {
   };
 
   useEffect(() => {
-    if (prompt && !initialFired.current) {
+    if (initialFired.current) return;
+    if (saved) {
+      initialFired.current = true;
+      try {
+        const raw = localStorage.getItem("nuvic.savedProjects");
+        const list = raw ? JSON.parse(raw) : [];
+        const found = list.find((p: { id: string }) => p.id === saved);
+        if (found) {
+          setMessages(found.messages || []);
+          setFiles(found.files || {});
+          setMobileView("preview");
+          toast.success(`Loaded "${found.name}"`);
+          return;
+        }
+        toast.error("Saved project not found");
+      } catch {
+        toast.error("Could not load saved project");
+      }
+      return;
+    }
+    if (prompt) {
       initialFired.current = true;
       handleSend(prompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prompt]);
+  }, [prompt, saved]);
 
   const hasFiles = Object.keys(files).length > 0;
 
