@@ -309,8 +309,8 @@ function LandingPage() {
               <CircleButton aria-label="Model">
                 <ChipIcon />
               </CircleButton>
-              <CircleButton aria-label="Quick">
-                <BoltIcon />
+              <CircleButton aria-label="Templates" onClick={() => setTemplatesOpen(true)}>
+                <TemplatesIcon />
               </CircleButton>
             </div>
             <button
