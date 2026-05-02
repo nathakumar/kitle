@@ -106,13 +106,6 @@ function LandingPage() {
           <Link to="/" className="text-base font-semibold tracking-tight sm:text-lg">
             nuvic
           </Link>
-          <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-            <NavItem label="Product" />
-            <NavItem label="Use Cases" />
-            <NavItem label="Resources" />
-            <a href="#pricing" className="hover:text-foreground">Pricing</a>
-            <a href="#hire" className="hover:text-foreground">Hire</a>
-          </div>
           <div className="flex items-center gap-1.5 sm:gap-2">
             <IconButton aria-label="Language">
               <GlobeIcon />
