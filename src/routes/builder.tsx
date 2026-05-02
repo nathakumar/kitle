@@ -61,6 +61,29 @@ function BuilderPage() {
 
   const hasFiles = Object.keys(files).length > 0;
 
+  const saveProject = () => {
+    if (!hasFiles) {
+      toast.error("Nothing to save yet — generate something first.");
+      return;
+    }
+    const defaultName =
+      messages.find((m) => m.role === "user")?.content.slice(0, 60) ||
+      `Project ${new Date().toLocaleString()}`;
+    const name = window.prompt("Name this project:", defaultName)?.trim();
+    if (!name) return;
+    try {
+      const key = "nuvic.savedProjects";
+      const raw = localStorage.getItem(key);
+      const list: Array<{ id: string; name: string; savedAt: number; messages: ChatMessage[]; files: Record<string, string> }> =
+        raw ? JSON.parse(raw) : [];
+      list.unshift({ id: crypto.randomUUID(), name, savedAt: Date.now(), messages, files });
+      localStorage.setItem(key, JSON.stringify(list.slice(0, 30)));
+      toast.success("Project saved");
+    } catch {
+      toast.error("Could not save (storage full?)");
+    }
+  };
+
   return (
     <main className="dark relative flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
       <div
