@@ -29,6 +29,7 @@ function BuilderPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const initialFired = useRef(false);
 
   const handleSend = async (text: string) => {
