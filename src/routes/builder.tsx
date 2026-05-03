@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChatPanel, type ChatMessage } from "@/components/builder/ChatPanel";
@@ -28,6 +28,7 @@ function BuilderPage() {
   const [files, setFiles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const initialFired = useRef(false);
 
   const handleSend = async (text: string) => {
@@ -133,19 +134,58 @@ function BuilderPage() {
         </div>
       </div>
 
-      {/* Floating Save button */}
-      <button
-        onClick={saveProject}
-        disabled={!hasFiles}
-        className="fixed right-3 top-3 z-50 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background disabled:opacity-40"
-        aria-label="Save project"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-          <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        Save
-      </button>
+      {/* Floating Settings button */}
+      <div className="fixed right-3 top-3 z-50">
+        <button
+          onClick={() => setSettingsOpen((v) => !v)}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background"
+          aria-label="Settings"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        {settingsOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setSettingsOpen(false)} />
+            <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-xl border border-border/60 bg-background/95 p-1 shadow-2xl backdrop-blur-md">
+              <button
+                onClick={() => { setSettingsOpen(false); saveProject(); }}
+                disabled={!hasFiles}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-40"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                  <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Save project
+              </button>
+              <Link
+                to="/"
+                onClick={() => setSettingsOpen(false)}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" strokeLinejoin="round" />
+                </svg>
+                Saved projects
+              </Link>
+              <Link
+                to="/"
+                onClick={() => setSettingsOpen(false)}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M3 12l9-9 9 9M5 10v10h14V10" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Back to home
+              </Link>
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Floating mobile bottom pill — Chat / Preview */}
       <div
