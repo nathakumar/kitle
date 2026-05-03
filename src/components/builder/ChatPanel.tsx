@@ -21,6 +21,7 @@ const SUGGESTIONS = [
 
 export function ChatPanel({ messages, isLoading, onSend }: Props) {
   const [input, setInput] = useState("");
+  const [accountOpen, setAccountOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
