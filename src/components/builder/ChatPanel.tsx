@@ -53,7 +53,7 @@ export function ChatPanel({ messages, isLoading, onSend }: Props) {
 
   return (
     <div
-      className="relative flex h-full flex-col-reverse border-r border-border/60 md:flex-col"
+      className="relative flex h-full flex-col border-r border-border/60"
       style={{ background: "var(--builder-surface)" }}
     >
       {/* subtle top glow */}
@@ -63,17 +63,77 @@ export function ChatPanel({ messages, isLoading, onSend }: Props) {
       />
 
       {/* Header */}
-      <div className="relative flex shrink-0 items-center gap-2.5 border-b border-border/60 px-4 py-3">
-        <div
-          className="flex h-7 w-7 items-center justify-center rounded-lg shadow-lg"
-          style={{ background: "var(--gradient-builder)", boxShadow: "var(--shadow-glow)" }}
-        >
-          <Sparkles className="h-3.5 w-3.5 text-white" strokeWidth={2.5} />
+      <div className="relative flex shrink-0 items-center gap-2 border-b border-border/60 px-3 py-2.5">
+        {/* Account / workspace pill */}
+        <div className="relative">
+          <button
+            onClick={() => setAccountOpen((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-1.5 py-1 pr-2 text-foreground transition-colors hover:bg-background/70"
+            aria-label="Account menu"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-orange-500 text-[11px] font-bold text-white">K</span>
+            <span className="max-w-[110px] truncate text-[12px] font-medium sm:max-w-none">Prompt Sandbox</span>
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </button>
+
+          {accountOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setAccountOpen(false)} />
+              <div className="absolute left-0 top-11 z-50 w-72 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-2 shadow-2xl backdrop-blur-md">
+                <Link
+                  to="/"
+                  onClick={() => setAccountOpen(false)}
+                  className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <Home className="h-3.5 w-3.5" />
+                  Go to Home
+                </Link>
+
+                <div className="mt-1 flex items-center gap-2 px-2.5 py-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-orange-500 text-[12px] font-bold text-white">K</span>
+                  <span className="flex-1 text-sm font-medium">Your workspace</span>
+                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">Free</span>
+                </div>
+
+                <div className="mx-1 mt-1 rounded-xl bg-muted/50 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold">Credits</span>
+                    <span className="text-xs text-muted-foreground">1.7 left ›</span>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-background/60">
+                    <div className="h-full w-[15%] rounded-full bg-blue-500" />
+                  </div>
+                  <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                    Daily credits reset at midnight UTC
+                  </div>
+                </div>
+
+                <a
+                  href="https://lovable.dev/pricing"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setAccountOpen(false)}
+                  className="mt-1 flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <Gift className="h-3.5 w-3.5" />
+                  Get free credits
+                </a>
+                <a
+                  href="https://lovable.dev/pricing"
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setAccountOpen(false)}
+                  className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <Star className="h-3.5 w-3.5" />
+                  Pricing & plans
+                </a>
+              </div>
+            </>
+          )}
         </div>
-        <div className="min-w-0">
-          <h1 className="text-[13px] font-semibold tracking-tight text-foreground">AI Builder</h1>
-          <p className="truncate text-[11px] text-muted-foreground">Describe it. Watch it build.</p>
-        </div>
+
         <div className="ml-auto flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
           <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Online</span>
