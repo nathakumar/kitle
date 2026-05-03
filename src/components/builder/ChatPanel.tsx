@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { ArrowUp, Sparkles, User } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowUp, ChevronDown, Gift, Home, Sparkles, Star, User } from "lucide-react";
 
 export type ChatMessage = {
   role: "user" | "assistant";
