@@ -28,6 +28,7 @@ function BuilderPage() {
   const [files, setFiles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const initialFired = useRef(false);
 
   const handleSend = async (text: string) => {
