@@ -135,6 +135,84 @@ function BuilderPage() {
         </div>
       </div>
 
+      {/* Floating Account button (top-left) */}
+      <div className="fixed left-3 top-3 z-50">
+        <button
+          onClick={() => setAccountOpen((v) => !v)}
+          className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-2.5 py-1.5 text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background"
+          aria-label="Account"
+        >
+          <span className="flex h-6 w-6 items-center justify-center rounded-md bg-orange-500 text-[11px] font-bold text-white">K</span>
+          <span className="hidden text-[12px] font-medium sm:inline">Prompt Sandbox</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        {accountOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setAccountOpen(false)} />
+            <div className="absolute left-0 top-11 z-50 w-72 overflow-hidden rounded-2xl border border-border/60 bg-background/95 p-2 shadow-2xl backdrop-blur-md">
+              <Link
+                to="/"
+                onClick={() => setAccountOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Go to Home
+              </Link>
+
+              <div className="mt-1 flex items-center gap-2 px-2.5 py-2">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-orange-500 text-[12px] font-bold text-white">K</span>
+                <span className="flex-1 text-sm font-medium">Your workspace</span>
+                <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">Free</span>
+              </div>
+
+              <div className="mx-1 mt-1 rounded-xl bg-muted/50 p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">Credits</span>
+                  <span className="text-xs text-muted-foreground">1.7 left ›</span>
+                </div>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-background/60">
+                  <div className="h-full w-[15%] rounded-full bg-blue-500" />
+                </div>
+                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
+                  Daily credits reset at midnight UTC
+                </div>
+              </div>
+
+              <a
+                href="https://lovable.dev/pricing"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setAccountOpen(false)}
+                className="mt-1 flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M20 12V8H6a2 2 0 010-4h12v4M4 6v12a2 2 0 002 2h14v-4M18 12a2 2 0 100 4h4v-4h-4z" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Get free credits
+              </a>
+              <a
+                href="https://lovable.dev/pricing"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setAccountOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z" strokeLinejoin="round" />
+                </svg>
+                Pricing & plans
+              </a>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* Floating Settings button */}
       <div className="fixed right-3 top-3 z-50">
         <button
