@@ -408,6 +408,18 @@ function LandingPage() {
             nuvic
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <Link
+              to="/gallery"
+              className="hidden rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-card hover:text-foreground sm:inline-flex"
+            >
+              Gallery
+            </Link>
+            <Link
+              to="/projects"
+              className="hidden rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-card hover:text-foreground sm:inline-flex"
+            >
+              My projects
+            </Link>
             <IconButton aria-label="Saved projects" onClick={() => setSavedOpen(true)}>
               <FolderIcon />
             </IconButton>
