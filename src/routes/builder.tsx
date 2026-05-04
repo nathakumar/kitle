@@ -4,6 +4,10 @@ import { toast } from "sonner";
 import { ChatPanel, type ChatMessage } from "@/components/builder/ChatPanel";
 import { PreviewPanel } from "@/components/builder/PreviewPanel";
 import { generateProject } from "@/server/generate.functions";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthDialog } from "@/components/AuthDialog";
+import { saveProject as saveProjectCloud, getProject } from "@/lib/projects";
+import { supabase } from "@/integrations/supabase/client";
 
 type BuilderSearch = { prompt?: string; saved?: string };
 type MobileView = "chat" | "preview";
@@ -24,11 +28,17 @@ export const Route = createFileRoute("/builder")({
 
 function BuilderPage() {
   const { prompt, saved } = Route.useSearch();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [files, setFiles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("chat");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveName, setSaveName] = useState("");
+  const [saveVisibility, setSaveVisibility] = useState<"private" | "public">("private");
+  const [saving, setSaving] = useState(false);
   const initialFired = useRef(false);
 
   const handleSend = async (text: string) => {
@@ -57,21 +67,30 @@ function BuilderPage() {
     if (initialFired.current) return;
     if (saved) {
       initialFired.current = true;
-      try {
-        const raw = localStorage.getItem("nuvic.savedProjects");
-        const list = raw ? JSON.parse(raw) : [];
-        const found = list.find((p: { id: string }) => p.id === saved);
-        if (found) {
-          setMessages(found.messages || []);
-          setFiles(found.files || {});
-          setMobileView("preview");
-          toast.success(`Loaded "${found.name}"`);
-          return;
-        }
-        toast.error("Saved project not found");
-      } catch {
-        toast.error("Could not load saved project");
-      }
+      // Try cloud first
+      getProject(saved)
+        .then((p) => {
+          if (p) {
+            setMessages((p.messages as ChatMessage[]) || []);
+            setFiles(p.files || {});
+            setMobileView("preview");
+            toast.success(`Loaded "${p.name}"`);
+            return;
+          }
+          // Fallback to localStorage
+          const raw = localStorage.getItem("nuvic.savedProjects");
+          const list = raw ? JSON.parse(raw) : [];
+          const found = list.find((x: { id: string }) => x.id === saved);
+          if (found) {
+            setMessages(found.messages || []);
+            setFiles(found.files || {});
+            setMobileView("preview");
+            toast.success(`Loaded "${found.name}"`);
+          } else {
+            toast.error("Saved project not found");
+          }
+        })
+        .catch(() => toast.error("Could not load project"));
       return;
     }
     if (prompt) {
@@ -83,26 +102,44 @@ function BuilderPage() {
 
   const hasFiles = Object.keys(files).length > 0;
 
-  const saveProject = () => {
+  const openSaveDialog = () => {
     if (!hasFiles) {
       toast.error("Nothing to save yet — generate something first.");
+      return;
+    }
+    if (!user) {
+      setAuthOpen(true);
       return;
     }
     const defaultName =
       messages.find((m) => m.role === "user")?.content.slice(0, 60) ||
       `Project ${new Date().toLocaleString()}`;
-    const name = window.prompt("Name this project:", defaultName)?.trim();
-    if (!name) return;
+    setSaveName(defaultName);
+    setSaveOpen(true);
+  };
+
+  const doSave = async () => {
+    if (!saveName.trim()) return;
+    setSaving(true);
     try {
-      const key = "nuvic.savedProjects";
-      const raw = localStorage.getItem(key);
-      const list: Array<{ id: string; name: string; savedAt: number; messages: ChatMessage[]; files: Record<string, string> }> =
-        raw ? JSON.parse(raw) : [];
-      list.unshift({ id: crypto.randomUUID(), name, savedAt: Date.now(), messages, files });
-      localStorage.setItem(key, JSON.stringify(list.slice(0, 30)));
-      toast.success("Project saved");
-    } catch {
-      toast.error("Could not save (storage full?)");
+      const id = await saveProjectCloud({
+        name: saveName.trim(),
+        files,
+        messages,
+        visibility: saveVisibility,
+      });
+      if (saveVisibility === "public") {
+        const url = `${window.location.origin}/p/${id}`;
+        await navigator.clipboard.writeText(url).catch(() => {});
+        toast.success("Saved as public — link copied");
+      } else {
+        toast.success("Project saved (private)");
+      }
+      setSaveOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -150,9 +187,14 @@ function BuilderPage() {
         {settingsOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setSettingsOpen(false)} />
-            <div className="absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-xl border border-border/60 bg-background/95 p-1 shadow-2xl backdrop-blur-md">
+            <div className="absolute right-0 top-11 z-50 w-60 overflow-hidden rounded-xl border border-border/60 bg-background/95 p-1 shadow-2xl backdrop-blur-md">
+              {user ? (
+                <div className="border-b border-border/60 px-3 py-2 text-[11px] text-muted-foreground">
+                  Signed in as <span className="text-foreground">{user.email}</span>
+                </div>
+              ) : null}
               <button
-                onClick={() => { setSettingsOpen(false); saveProject(); }}
+                onClick={() => { setSettingsOpen(false); openSaveDialog(); }}
                 disabled={!hasFiles}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-40"
               >
@@ -160,18 +202,54 @@ function BuilderPage() {
                   <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                   <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                Save project
+                Save project…
               </button>
               <Link
-                to="/"
+                to="/projects"
                 onClick={() => setSettingsOpen(false)}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                   <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" strokeLinejoin="round" />
                 </svg>
-                Saved projects
+                My projects
               </Link>
+              <Link
+                to="/gallery"
+                onClick={() => setSettingsOpen(false)}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
+                </svg>
+                Public gallery
+              </Link>
+              {user ? (
+                <button
+                  onClick={async () => {
+                    setSettingsOpen(false);
+                    await supabase.auth.signOut();
+                    toast.success("Signed out");
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M16 17l5-5-5-5M21 12H9M13 21H5a2 2 0 01-2-2V5a2 2 0 012-2h8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setSettingsOpen(false); setAuthOpen(true); }}
+                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                    <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Sign in
+                </button>
+              )}
               <Link
                 to="/"
                 onClick={() => setSettingsOpen(false)}
@@ -186,6 +264,75 @@ function BuilderPage() {
           </>
         )}
       </div>
+
+      {/* Save dialog */}
+      {saveOpen && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-background/80 p-4 backdrop-blur"
+          onClick={() => !saving && setSaveOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+          >
+            <h2 className="text-lg font-semibold">Save project</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Stored in your account.</p>
+
+            <label className="mt-4 mb-1 block text-xs uppercase tracking-wider text-muted-foreground">Name</label>
+            <input
+              value={saveName}
+              onChange={(e) => setSaveName(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
+            />
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setSaveVisibility("private")}
+                className={
+                  "rounded-lg border p-3 text-left text-xs transition-all " +
+                  (saveVisibility === "private"
+                    ? "border-foreground bg-foreground/5"
+                    : "border-border hover:border-foreground/40")
+                }
+              >
+                <div className="font-semibold text-foreground">🔒 Private</div>
+                <div className="mt-1 text-muted-foreground">Only you can see it</div>
+              </button>
+              <button
+                onClick={() => setSaveVisibility("public")}
+                className={
+                  "rounded-lg border p-3 text-left text-xs transition-all " +
+                  (saveVisibility === "public"
+                    ? "border-foreground bg-foreground/5"
+                    : "border-border hover:border-foreground/40")
+                }
+              >
+                <div className="font-semibold text-foreground">🌐 Public</div>
+                <div className="mt-1 text-muted-foreground">Shareable link + gallery</div>
+              </button>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                onClick={() => setSaveOpen(false)}
+                disabled={saving}
+                className="rounded-full border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={doSave}
+                disabled={saving || !saveName.trim()}
+                className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60"
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
 
       {/* Floating mobile bottom pill — Chat / Preview */}
       <div
