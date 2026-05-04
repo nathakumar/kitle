@@ -721,6 +721,15 @@ function LandingPage() {
           </div>
         )}
 
+        <TemplatePreviewModal
+          template={previewTemplate}
+          onClose={() => setPreviewTemplate(null)}
+          onUse={(tpl) => {
+            setPreviewTemplate(null);
+            pickTemplate(tpl);
+          }}
+        />
+
         {/* Scroll cue */}
         <div className="mt-10 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-16 sm:text-[11px]">
           Scroll to explore
