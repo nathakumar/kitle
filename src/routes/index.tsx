@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
