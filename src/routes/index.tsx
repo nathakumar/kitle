@@ -302,6 +302,7 @@ function LandingPage() {
   const [importError, setImportError] = useState<string | null>(null);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
 
   useEffect(() => {
