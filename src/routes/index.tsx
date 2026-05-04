@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -301,6 +302,7 @@ function LandingPage() {
   const [importError, setImportError] = useState<string | null>(null);
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
 
   useEffect(() => {
@@ -406,6 +408,18 @@ function LandingPage() {
             nuvic
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-2">
+            <Link
+              to="/gallery"
+              className="hidden rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-card hover:text-foreground sm:inline-flex"
+            >
+              Gallery
+            </Link>
+            <Link
+              to="/projects"
+              className="hidden rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-card hover:text-foreground sm:inline-flex"
+            >
+              My projects
+            </Link>
             <IconButton aria-label="Saved projects" onClick={() => setSavedOpen(true)}>
               <FolderIcon />
             </IconButton>
@@ -599,19 +613,28 @@ function LandingPage() {
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {TEMPLATES.map((tpl) => (
-                  <button
+                  <div
                     key={tpl.id}
-                    onClick={() => pickTemplate(tpl)}
-                    className="group flex flex-col overflow-hidden rounded-xl border border-border bg-background text-left transition-all hover:-translate-y-0.5 hover:border-foreground/40 hover:shadow-xl"
+                    className="group relative flex flex-col overflow-hidden rounded-xl border border-border bg-background text-left transition-all hover:-translate-y-0.5 hover:border-foreground/40 hover:shadow-xl"
                   >
-                    <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-border bg-muted">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewTemplate(tpl)}
+                      className="relative aspect-[4/3] w-full overflow-hidden border-b border-border bg-muted"
+                      aria-label={`Preview ${tpl.name}`}
+                    >
                       <iframe
                         title={tpl.name}
                         srcDoc={`<!doctype html><html><body style="margin:0;overflow:hidden">${tpl.preview}</body></html>`}
                         sandbox=""
-                        className="pointer-events-none absolute inset-0 h-full w-full"
+                        className="pointer-events-none absolute inset-0 h-full w-full transition-transform duration-300 group-hover:scale-105"
                       />
-                    </div>
+                      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                        <span className="rounded-full bg-white/95 px-3 py-1.5 text-xs font-medium text-black">
+                          👁 Preview
+                        </span>
+                      </div>
+                    </button>
                     <div className="flex flex-1 flex-col p-3">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-sm font-semibold">{tpl.name}</span>
@@ -620,11 +643,22 @@ function LandingPage() {
                         </span>
                       </div>
                       <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tpl.description}</p>
-                      <span className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                        Use this template →
-                      </span>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() => setPreviewTemplate(tpl)}
+                          className="flex-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => pickTemplate(tpl)}
+                          className="flex-1 rounded-full bg-foreground px-3 py-1.5 text-xs font-medium text-background hover:scale-[1.02]"
+                        >
+                          Use →
+                        </button>
+                      </div>
                     </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -686,6 +720,15 @@ function LandingPage() {
             </div>
           </div>
         )}
+
+        <TemplatePreviewModal
+          template={previewTemplate}
+          onClose={() => setPreviewTemplate(null)}
+          onUse={(tpl) => {
+            setPreviewTemplate(null);
+            pickTemplate(tpl);
+          }}
+        />
 
         {/* Scroll cue */}
         <div className="mt-10 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-16 sm:text-[11px]">
