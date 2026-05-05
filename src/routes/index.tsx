@@ -748,6 +748,7 @@ function LandingPage() {
           </svg>
         </div>
       </section>
+      <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
     </main>
   );
 }
