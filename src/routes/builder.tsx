@@ -42,6 +42,11 @@ function BuilderPage() {
   const initialFired = useRef(false);
 
   const handleSend = async (text: string) => {
+    if (!user) {
+      toast.error("Please sign in to generate");
+      setAuthOpen(true);
+      return;
+    }
     const userMsg: ChatMessage = { role: "user", content: text };
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
