@@ -131,8 +131,9 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
             <Download className="h-3.5 w-3.5" />
           </button>
           <button
+            onClick={onSettings}
             aria-label="Settings"
-            className="hidden h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70 sm:flex"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70"
           >
             <Settings className="h-3.5 w-3.5" />
           </button>
