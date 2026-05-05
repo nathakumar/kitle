@@ -295,9 +295,11 @@ const TEMPLATES: Template[] = [
 
 function LandingPage() {
   const navigate = useNavigate({ from: "/" });
+  const { user, loading: authLoading } = useAuth();
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const submittingRef = useRef(false);
   const [prompt, setPrompt] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importUrl, setImportUrl] = useState("");
