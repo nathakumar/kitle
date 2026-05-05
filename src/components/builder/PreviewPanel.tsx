@@ -17,6 +17,8 @@ interface Props {
   onBack?: () => void;
   /** Optional GitHub URL — falls back to opening github.com */
   githubUrl?: string;
+  /** Open the settings menu (handled by parent) */
+  onSettings?: () => void;
 }
 
 type Tab = "preview" | "code";
