@@ -349,6 +349,12 @@ function LandingPage() {
   const go = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || submittingRef.current) return;
+    if (authLoading) return;
+    if (!user) {
+      toast.error("Please sign in to generate a website");
+      setAuthOpen(true);
+      return;
+    }
     submittingRef.current = true;
     setSubmitting(true);
     void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
