@@ -167,6 +167,7 @@ function BuilderPage() {
             files={files}
             isLoading={isLoading}
             onBack={() => setMobileView("chat")}
+            onSettings={() => setSettingsOpen((v) => !v)}
           />
         </div>
       </div>
