@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { toast } from "sonner";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
+import { UserMenu } from "@/components/UserMenu";
+import { AuthDialog } from "@/components/AuthDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -291,9 +295,11 @@ const TEMPLATES: Template[] = [
 
 function LandingPage() {
   const navigate = useNavigate({ from: "/" });
+  const { user, loading: authLoading } = useAuth();
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const submittingRef = useRef(false);
   const [prompt, setPrompt] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [importUrl, setImportUrl] = useState("");
@@ -343,6 +349,12 @@ function LandingPage() {
   const go = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || submittingRef.current) return;
+    if (authLoading) return;
+    if (!user) {
+      toast.error("Please sign in to generate a website");
+      setAuthOpen(true);
+      return;
+    }
     submittingRef.current = true;
     setSubmitting(true);
     void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
@@ -426,9 +438,7 @@ function LandingPage() {
             <IconButton aria-label="Language">
               <GlobeIcon />
             </IconButton>
-            <IconButton aria-label="Account">
-              <UserIcon />
-            </IconButton>
+            <UserMenu size="sm" align="right" />
             <IconButton aria-label="Menu">
               <MenuIcon />
             </IconButton>
@@ -738,6 +748,7 @@ function LandingPage() {
           </svg>
         </div>
       </section>
+      <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
     </main>
   );
 }

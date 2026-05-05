@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowUp, ChevronDown, Gift, Home, Sparkles, Star, User } from "lucide-react";
+import { UserMenu } from "@/components/UserMenu";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -64,6 +65,8 @@ export function ChatPanel({ messages, isLoading, onSend }: Props) {
 
       {/* Header */}
       <div className="relative flex shrink-0 items-center gap-2 border-b border-border/60 px-3 py-2.5">
+        {/* Profile / sign-in */}
+        <UserMenu size="sm" align="left" />
         {/* Account / workspace pill */}
         <div className="relative">
           <button
