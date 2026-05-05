@@ -1,6 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { toast } from "sonner";
 import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
+import { UserMenu } from "@/components/UserMenu";
+import { AuthDialog } from "@/components/AuthDialog";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -426,9 +430,7 @@ function LandingPage() {
             <IconButton aria-label="Language">
               <GlobeIcon />
             </IconButton>
-            <IconButton aria-label="Account">
-              <UserIcon />
-            </IconButton>
+            <UserMenu size="sm" align="right" />
             <IconButton aria-label="Menu">
               <MenuIcon />
             </IconButton>
