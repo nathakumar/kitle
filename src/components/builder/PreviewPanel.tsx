@@ -17,6 +17,8 @@ interface Props {
   onBack?: () => void;
   /** Optional GitHub URL — falls back to opening github.com */
   githubUrl?: string;
+  /** Open the settings menu (handled by parent) */
+  onSettings?: () => void;
 }
 
 type Tab = "preview" | "code";
@@ -38,7 +40,7 @@ async function downloadAsZip(files: Record<string, string>) {
   URL.revokeObjectURL(url);
 }
 
-export function PreviewPanel({ files, isLoading = false, onBack, githubUrl }: Props) {
+export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSettings }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
 
   const hasFiles = Object.keys(files).length > 0;
@@ -129,8 +131,9 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl }: Pr
             <Download className="h-3.5 w-3.5" />
           </button>
           <button
+            onClick={onSettings}
             aria-label="Settings"
-            className="hidden h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70 sm:flex"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70"
           >
             <Settings className="h-3.5 w-3.5" />
           </button>

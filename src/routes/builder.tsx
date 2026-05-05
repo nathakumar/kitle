@@ -167,15 +167,19 @@ function BuilderPage() {
             files={files}
             isLoading={isLoading}
             onBack={() => setMobileView("chat")}
+            onSettings={() => setSettingsOpen((v) => !v)}
           />
         </div>
       </div>
 
-      {/* Floating Settings button */}
+      {/* Settings: floating trigger only visible on mobile-chat view (preview view uses inline button in PreviewPanel toolbar) */}
       <div className="fixed right-3 top-3 z-50">
         <button
           onClick={() => setSettingsOpen((v) => !v)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background"
+          className={
+            "inline-flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-background/70 text-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-background " +
+            (mobileView === "chat" ? "flex md:hidden" : "hidden")
+          }
           aria-label="Settings"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -203,6 +207,38 @@ function BuilderPage() {
                   <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Save project…
+              </button>
+              <button
+                onClick={async () => {
+                  setSettingsOpen(false);
+                  if (!hasFiles) { toast.error("Nothing to download yet."); return; }
+                  try {
+                    const JSZip = (await import("jszip")).default;
+                    const zip = new JSZip();
+                    Object.entries(files).forEach(([path, content]) => {
+                      const clean = path.startsWith("/") ? path.slice(1) : path;
+                      zip.file(clean, content);
+                    });
+                    const blob = await zip.generateAsync({ type: "blob" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `lovable-project-${Date.now()}.zip`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                  } catch {
+                    toast.error("Could not create ZIP");
+                  }
+                }}
+                disabled={!hasFiles}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-40"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Download as ZIP
               </button>
               <Link
                 to="/projects"
