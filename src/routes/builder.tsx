@@ -99,11 +99,16 @@ function BuilderPage() {
       return;
     }
     if (prompt) {
+      if (!user) {
+        // Wait for auth to resolve; will re-run when `user` updates
+        if (!authOpen) setAuthOpen(true);
+        return;
+      }
       initialFired.current = true;
       handleSend(prompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prompt, saved]);
+  }, [prompt, saved, user]);
 
   const hasFiles = Object.keys(files).length > 0;
 
