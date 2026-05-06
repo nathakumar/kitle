@@ -158,21 +158,21 @@ function BuilderPage() {
 
   return (
     <main className="dark relative flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
+      {/* Mobile layout: simple show/hide */}
       <div
         className={
-          "min-h-0 w-full md:w-[38%] md:min-w-[340px] md:max-w-[520px] " +
-          (mobileView === "chat" ? "flex flex-1" : "hidden md:flex")
+          "min-h-0 w-full md:hidden " +
+          (mobileView === "chat" ? "flex flex-1" : "hidden")
         }
       >
         <div className="h-full w-full">
           <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
         </div>
       </div>
-
       <div
         className={
-          "min-h-0 w-full md:flex-1 " +
-          (mobileView === "preview" ? "flex flex-1" : "hidden md:flex")
+          "min-h-0 w-full md:hidden " +
+          (mobileView === "preview" ? "flex flex-1" : "hidden")
         }
       >
         <div className="h-full w-full">
@@ -183,6 +183,31 @@ function BuilderPage() {
             onSettings={() => setSettingsOpen((v) => !v)}
           />
         </div>
+      </div>
+
+      {/* Desktop layout: resizable split */}
+      <div className="hidden h-full w-full min-h-0 md:flex md:flex-1">
+        <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+          <ResizablePanel defaultSize={38} minSize={22} maxSize={60} className="min-h-0">
+            <div className="h-full w-full">
+              <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
+            </div>
+          </ResizablePanel>
+          <ResizableHandle
+            withHandle
+            className="w-1.5 cursor-col-resize bg-border/40 transition-colors hover:bg-foreground/30 data-[resize-handle-state=drag]:bg-foreground/50"
+          />
+          <ResizablePanel defaultSize={62} minSize={40} className="min-h-0">
+            <div className="h-full w-full">
+              <PreviewPanel
+                files={files}
+                isLoading={isLoading}
+                onBack={() => setMobileView("chat")}
+                onSettings={() => setSettingsOpen((v) => !v)}
+              />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
 
       {/* Settings: floating trigger only visible on mobile-chat view (preview view uses inline button in PreviewPanel toolbar) */}
