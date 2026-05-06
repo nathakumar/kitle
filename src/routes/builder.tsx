@@ -28,7 +28,7 @@ export const Route = createFileRoute("/builder")({
 
 function BuilderPage() {
   const { prompt, saved } = Route.useSearch();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [files, setFiles] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +42,7 @@ function BuilderPage() {
   const initialFired = useRef(false);
 
   const handleSend = async (text: string) => {
+    if (authLoading) return; // wait for session to hydrate
     if (!user) {
       toast.error("Please sign in to generate");
       setAuthOpen(true);
@@ -70,6 +71,8 @@ function BuilderPage() {
 
   useEffect(() => {
     if (initialFired.current) return;
+    // Wait until the auth session has been restored from storage before deciding
+    if (authLoading) return;
     if (saved) {
       initialFired.current = true;
       // Try cloud first
@@ -100,7 +103,6 @@ function BuilderPage() {
     }
     if (prompt) {
       if (!user) {
-        // Wait for auth to resolve; will re-run when `user` updates
         if (!authOpen) setAuthOpen(true);
         return;
       }
@@ -108,7 +110,7 @@ function BuilderPage() {
       handleSend(prompt);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prompt, saved, user]);
+  }, [prompt, saved, user, authLoading]);
 
   const hasFiles = Object.keys(files).length > 0;
 
