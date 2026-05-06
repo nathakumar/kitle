@@ -187,7 +187,7 @@ function BuilderPage() {
 
       {/* Desktop layout: resizable split */}
       <div className="hidden h-full w-full min-h-0 md:flex md:flex-1">
-        <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+        <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
           <ResizablePanel defaultSize={38} minSize={22} maxSize={60} className="min-h-0">
             <div className="h-full w-full">
               <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
