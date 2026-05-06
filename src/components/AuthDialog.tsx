@@ -1,95 +1,247 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Loader2, Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+type Mode = "signin" | "signup";
+
+const friendlyError = (msg: string): string => {
+  const m = msg.toLowerCase();
+  if (m.includes("invalid login")) return "Wrong email or password.";
+  if (m.includes("email not confirmed")) return "Please verify your email first.";
+  if (m.includes("user already registered") || m.includes("already been registered"))
+    return "An account with this email already exists. Try signing in.";
+  if (m.includes("password should be at least")) return "Password must be at least 6 characters.";
+  if (m.includes("rate limit")) return "Too many attempts. Please wait a moment.";
+  if (m.includes("invalid email")) return "Please enter a valid email address.";
+  if (m.includes("network")) return "Network error. Check your connection.";
+  return msg;
+};
+
 export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+
+  // Reset state when dialog opens / closes
+  useEffect(() => {
+    if (open) {
+      setErr(null);
+      setBusy(false);
+      setTimeout(() => emailRef.current?.focus(), 50);
+    } else {
+      setPassword("");
+      setConfirm("");
+      setShowPwd(false);
+      setErr(null);
+    }
+  }, [open]);
+
+  // Close on ESC
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, busy, onClose]);
 
   if (!open) return null;
 
+  const validate = (): string | null => {
+    const trimmed = email.trim();
+    if (!trimmed) return "Email is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return "Please enter a valid email address.";
+    if (!password) return "Password is required.";
+    if (password.length < 6) return "Password must be at least 6 characters.";
+    if (mode === "signup" && password !== confirm) return "Passwords do not match.";
+    return null;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
+    const v = validate();
+    if (v) {
+      setErr(v);
+      return;
+    }
+    setErr(null);
     setBusy(true);
     try {
+      const cleanEmail = email.trim().toLowerCase();
       if (mode === "signup") {
-        const redirectUrl = `${window.location.origin}/`;
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
           password,
-          options: { emailRedirectTo: redirectUrl },
+          options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        toast.success("Account created — you're signed in");
+        if (data.session) {
+          toast.success("Account created — you're signed in");
+          onClose();
+        } else if (data.user) {
+          // Email confirmation required
+          toast.success("Check your email to verify your account.");
+          setMode("signin");
+          setPassword("");
+          setConfirm("");
+        }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail,
+          password,
+        });
         if (error) throw error;
-        toast.success("Signed in");
+        toast.success("Welcome back");
+        onClose();
       }
-      onClose();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Authentication failed");
+    } catch (e) {
+      const msg = friendlyError(e instanceof Error ? e.message : "Authentication failed");
+      setErr(msg);
     } finally {
       setBusy(false);
     }
   };
 
+  const switchMode = () => {
+    setMode(mode === "signin" ? "signup" : "signin");
+    setErr(null);
+    setConfirm("");
+  };
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 p-4 backdrop-blur"
-      onClick={onClose}
+      onClick={() => !busy && onClose()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-title"
     >
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
         className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+        noValidate
       >
         <div className="mb-1 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 id="auth-title" className="text-lg font-semibold text-foreground">
             {mode === "signin" ? "Sign in" : "Create account"}
           </h2>
-          <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            ✕
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            aria-label="Close"
+            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+          >
+            <X className="h-4 w-4" />
           </button>
         </div>
         <p className="mb-4 text-xs text-muted-foreground">
-          {mode === "signin" ? "Welcome back" : "Save and share your projects"}
+          {mode === "signin"
+            ? "Welcome back — sign in to continue."
+            : "Save and share your projects."}
         </p>
 
-        <label className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">Email</label>
-        <input
-          type="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="mb-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
-          placeholder="you@email.com"
-        />
-        <label className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">Password</label>
-        <input
-          type="password"
-          required
-          minLength={6}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-4 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
-          placeholder="••••••••"
-        />
+        <label htmlFor="auth-email" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+          Email
+        </label>
+        <div className="relative mb-3">
+          <Mail className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            id="auth-email"
+            ref={emailRef}
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={busy}
+            className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm focus:border-foreground/40 focus:outline-none disabled:opacity-60"
+            placeholder="you@email.com"
+          />
+        </div>
+
+        <label htmlFor="auth-password" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+          Password
+        </label>
+        <div className="relative mb-3">
+          <Lock className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            id="auth-password"
+            type={showPwd ? "text" : "password"}
+            autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={busy}
+            className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-10 text-sm focus:border-foreground/40 focus:outline-none disabled:opacity-60"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPwd((v) => !v)}
+            tabIndex={-1}
+            aria-label={showPwd ? "Hide password" : "Show password"}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+          >
+            {showPwd ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+          </button>
+        </div>
+
+        {mode === "signup" && (
+          <>
+            <label htmlFor="auth-confirm" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+              Confirm password
+            </label>
+            <div className="relative mb-3">
+              <Lock className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <input
+                id="auth-confirm"
+                type={showPwd ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={6}
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                disabled={busy}
+                className="w-full rounded-lg border border-border bg-background py-2 pl-9 pr-3 text-sm focus:border-foreground/40 focus:outline-none disabled:opacity-60"
+                placeholder="••••••••"
+              />
+            </div>
+          </>
+        )}
+
+        {err && (
+          <div
+            role="alert"
+            className="mb-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive"
+          >
+            {err}
+          </div>
+        )}
 
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full bg-foreground py-2 text-sm font-medium text-background transition-all hover:scale-[1.01] active:scale-95 disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-foreground py-2 text-sm font-medium text-background transition-all hover:scale-[1.01] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
         >
+          {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
         </button>
 
         <button
           type="button"
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          onClick={switchMode}
+          disabled={busy}
+          className="mt-3 w-full text-center text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
         >
           {mode === "signin" ? "No account? Sign up" : "Have an account? Sign in"}
         </button>
