@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { saveProject as saveProjectCloud, getProject } from "@/lib/projects";
 import { supabase } from "@/integrations/supabase/client";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 
 type BuilderSearch = { prompt?: string; saved?: string };
 type MobileView = "chat" | "preview";
