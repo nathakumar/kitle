@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,9 +131,9 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
     setConfirm("");
   };
 
-  return (
+  const dialog = (
     <div
-      className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-background/80 p-4 backdrop-blur"
+      className="fixed inset-0 z-[1000] flex min-h-[100dvh] items-center justify-center bg-background/80 p-4 backdrop-blur"
       onClick={closeDialog}
       role="dialog"
       aria-modal="true"
@@ -273,4 +274,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
       </form>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(dialog, document.body);
 }
