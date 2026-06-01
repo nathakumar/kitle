@@ -164,7 +164,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
             : "Save and share your projects."}
         </p>
 
-        <label htmlFor="auth-email" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor="auth-email"
+          className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground"
+        >
           Email
         </label>
         <div className="relative mb-3">
@@ -184,7 +187,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           />
         </div>
 
-        <label htmlFor="auth-password" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor="auth-password"
+          className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground"
+        >
           Password
         </label>
         <div className="relative mb-3">
@@ -214,7 +220,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
 
         {mode === "signup" && (
           <>
-            <label htmlFor="auth-confirm" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="auth-confirm"
+              className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground"
+            >
               Confirm password
             </label>
             <div className="relative mb-3">
