@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type Mode = "signin" | "signup";
 
@@ -19,6 +20,7 @@ const friendlyError = (msg: string): string => {
 };
 
 export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { user, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,6 +49,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
       setErr(null);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open && !authLoading && user && !busy) closeDialog();
+  }, [open, authLoading, user, busy]);
 
   // Close on ESC
   useEffect(() => {
@@ -148,7 +154,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="mb-4 text-xs text-muted-foreground">
+        <p className="mb-5 text-xs leading-relaxed text-muted-foreground">
           {mode === "signin"
             ? "Welcome back — sign in to continue."
             : "Save and share your projects."}
