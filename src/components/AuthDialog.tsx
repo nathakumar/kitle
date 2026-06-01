@@ -28,6 +28,12 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
   const [err, setErr] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
 
+  const closeDialog = () => {
+    if (busy) return;
+    setMode("signin");
+    onClose();
+  };
+
   // Reset state when dialog opens / closes
   useEffect(() => {
     if (open) {
@@ -45,7 +51,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
   // Close on ESC
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeDialog();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, busy, onClose]);
@@ -97,8 +103,8 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           password,
         });
         if (error) throw error;
-        toast.success("Welcome back");
-        onClose();
+          toast.success("Welcome back");
+          closeDialog();
       }
     } catch (e) {
       const msg = friendlyError(e instanceof Error ? e.message : "Authentication failed");
@@ -116,8 +122,8 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 p-4 backdrop-blur"
-      onClick={() => !busy && onClose()}
+      className="fixed inset-0 z-[100] flex min-h-[100dvh] items-center justify-center bg-background/80 p-4 backdrop-blur"
+      onClick={closeDialog}
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-title"
@@ -125,7 +131,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
         noValidate
       >
         <div className="mb-1 flex items-center justify-between">
@@ -134,10 +140,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeDialog}
             disabled={busy}
             aria-label="Close"
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X className="h-4 w-4" />
           </button>
