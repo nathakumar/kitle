@@ -16,13 +16,16 @@ export function useAuth() {
       setUser(s?.user ?? null);
     };
 
-    supabase.auth.getSession().then(({ data }) => {
-      applySession(data.session);
-      if (mounted) setLoading(false);
-    }).catch(() => {
-      applySession(null);
-      if (mounted) setLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        applySession(data.session);
+        if (mounted) setLoading(false);
+      })
+      .catch(() => {
+        applySession(null);
+        if (mounted) setLoading(false);
+      });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_evt, s) => {
       applySession(s);
