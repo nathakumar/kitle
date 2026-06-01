@@ -99,7 +99,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
         if (error) throw error;
         if (data.session) {
           toast.success("Account created — you're signed in");
-          onClose();
+          resetAndClose();
         } else if (data.user) {
           // Email confirmation required
           toast.success("Check your email to verify your account.");
@@ -113,8 +113,8 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           password,
         });
         if (error) throw error;
-          toast.success("Welcome back");
-          closeDialog();
+        toast.success("Welcome back");
+        resetAndClose();
       }
     } catch (e) {
       const msg = friendlyError(e instanceof Error ? e.message : "Authentication failed");
