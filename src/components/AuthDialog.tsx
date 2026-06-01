@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 type Mode = "signin" | "signup";
 
@@ -19,6 +21,7 @@ const friendlyError = (msg: string): string => {
 };
 
 export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { user, loading: authLoading } = useAuth();
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +30,16 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
+
+  const resetAndClose = useCallback(() => {
+    setMode("signin");
+    onClose();
+  }, [onClose]);
+
+  const closeDialog = useCallback(() => {
+    if (busy) return;
+    resetAndClose();
+  }, [busy, resetAndClose]);
 
   // Reset state when dialog opens / closes
   useEffect(() => {
@@ -42,13 +55,17 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
     }
   }, [open]);
 
+  useEffect(() => {
+    if (open && !authLoading && user && !busy) closeDialog();
+  }, [open, authLoading, user, busy, closeDialog]);
+
   // Close on ESC
   useEffect(() => {
     if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeDialog();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, busy, onClose]);
+  }, [open, closeDialog]);
 
   if (!open) return null;
 
@@ -83,7 +100,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
         if (error) throw error;
         if (data.session) {
           toast.success("Account created — you're signed in");
-          onClose();
+          resetAndClose();
         } else if (data.user) {
           // Email confirmation required
           toast.success("Check your email to verify your account.");
@@ -98,7 +115,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
         });
         if (error) throw error;
         toast.success("Welcome back");
-        onClose();
+        resetAndClose();
       }
     } catch (e) {
       const msg = friendlyError(e instanceof Error ? e.message : "Authentication failed");
@@ -114,10 +131,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
     setConfirm("");
   };
 
-  return (
+  const dialog = (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 p-4 backdrop-blur"
-      onClick={() => !busy && onClose()}
+      className="fixed inset-0 z-[1000] flex min-h-[100dvh] items-center justify-center bg-background/80 p-4 backdrop-blur"
+      onClick={closeDialog}
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-title"
@@ -125,7 +142,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
       <form
         onSubmit={submit}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-2xl sm:p-6"
         noValidate
       >
         <div className="mb-1 flex items-center justify-between">
@@ -134,21 +151,24 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={closeDialog}
             disabled={busy}
             aria-label="Close"
-            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-50"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="mb-4 text-xs text-muted-foreground">
+        <p className="mb-5 text-xs leading-relaxed text-muted-foreground">
           {mode === "signin"
             ? "Welcome back — sign in to continue."
             : "Save and share your projects."}
         </p>
 
-        <label htmlFor="auth-email" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor="auth-email"
+          className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground"
+        >
           Email
         </label>
         <div className="relative mb-3">
@@ -168,7 +188,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
           />
         </div>
 
-        <label htmlFor="auth-password" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+        <label
+          htmlFor="auth-password"
+          className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground"
+        >
           Password
         </label>
         <div className="relative mb-3">
@@ -198,7 +221,10 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
 
         {mode === "signup" && (
           <>
-            <label htmlFor="auth-confirm" className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="auth-confirm"
+              className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground"
+            >
               Confirm password
             </label>
             <div className="relative mb-3">
@@ -248,4 +274,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
       </form>
     </div>
   );
+
+  if (typeof document === "undefined") return null;
+  return createPortal(dialog, document.body);
 }

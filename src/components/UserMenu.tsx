@@ -18,7 +18,7 @@ export function UserMenu({ size = "md", align = "right" }: Props) {
   const [open, setOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
 
-  const dim = size === "sm" ? "h-8 w-8" : "h-9 w-9";
+  const dim = "h-9 w-9";
   const iconSize = size === "sm" ? 14 : 16;
 
   const handleClick = () => {
@@ -38,12 +38,15 @@ export function UserMenu({ size = "md", align = "right" }: Props) {
           onClick={handleClick}
           aria-label={user ? "Account menu" : "Sign in"}
           className={
-            "inline-flex items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground transition-colors hover:bg-background/70 " +
+            "inline-flex shrink-0 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground transition-colors hover:bg-background/70 " +
             dim
           }
         >
           {user ? (
-            <span className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-[12px] font-semibold text-white">
+            <span
+              className="flex h-full w-full items-center justify-center rounded-full text-[12px] font-semibold text-primary-foreground"
+              style={{ background: "var(--gradient-builder)" }}
+            >
               {initial}
             </span>
           ) : (
@@ -61,7 +64,9 @@ export function UserMenu({ size = "md", align = "right" }: Props) {
               }
             >
               <div className="border-b border-border/60 px-3 py-2">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Signed in as</div>
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Signed in as
+                </div>
                 <div className="truncate text-sm font-medium text-foreground">{user.email}</div>
               </div>
               <Link
