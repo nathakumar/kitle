@@ -43,7 +43,10 @@ export function UserMenu({ size = "md", align = "right" }: Props) {
           }
         >
           {user ? (
-            <span className="flex h-full w-full items-center justify-center rounded-full text-[12px] font-semibold text-primary-foreground" style={{ background: "var(--gradient-builder)" }}>
+            <span
+              className="flex h-full w-full items-center justify-center rounded-full text-[12px] font-semibold text-primary-foreground"
+              style={{ background: "var(--gradient-builder)" }}
+            >
               {initial}
             </span>
           ) : (
@@ -61,7 +64,9 @@ export function UserMenu({ size = "md", align = "right" }: Props) {
               }
             >
               <div className="border-b border-border/60 px-3 py-2">
-                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">Signed in as</div>
+                <div className="text-[11px] uppercase tracking-wider text-muted-foreground">
+                  Signed in as
+                </div>
                 <div className="truncate text-sm font-medium text-foreground">{user.email}</div>
               </div>
               <Link
