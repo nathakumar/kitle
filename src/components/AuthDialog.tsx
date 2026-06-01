@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, X, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,11 +30,15 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
   const [err, setErr] = useState<string | null>(null);
   const emailRef = useRef<HTMLInputElement>(null);
 
-  const closeDialog = () => {
-    if (busy) return;
+  const resetAndClose = useCallback(() => {
     setMode("signin");
     onClose();
-  };
+  }, [onClose]);
+
+  const closeDialog = useCallback(() => {
+    if (busy) return;
+    resetAndClose();
+  }, [busy, resetAndClose]);
 
   // Reset state when dialog opens / closes
   useEffect(() => {
@@ -52,7 +56,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
 
   useEffect(() => {
     if (open && !authLoading && user && !busy) closeDialog();
-  }, [open, authLoading, user, busy]);
+  }, [open, authLoading, user, busy, closeDialog]);
 
   // Close on ESC
   useEffect(() => {
@@ -60,7 +64,7 @@ export function AuthDialog({ open, onClose }: { open: boolean; onClose: () => vo
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closeDialog();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, busy, onClose]);
+  }, [open, closeDialog]);
 
   if (!open) return null;
 
