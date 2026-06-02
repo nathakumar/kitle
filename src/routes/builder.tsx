@@ -188,7 +188,7 @@ function BuilderPage() {
       {/* Desktop layout: resizable split */}
       <div className="hidden h-full w-full min-h-0 md:flex md:flex-1">
         <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
-          <ResizablePanel defaultSize={38} minSize={22} maxSize={60} className="min-h-0">
+          <ResizablePanel defaultSize="38%" minSize="22%" maxSize="60%" className="min-h-0">
             <div className="h-full w-full">
               <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
             </div>
@@ -197,7 +197,7 @@ function BuilderPage() {
             withHandle
             className="w-1.5 cursor-col-resize bg-border/40 transition-colors hover:bg-foreground/30 data-[resize-handle-state=drag]:bg-foreground/50"
           />
-          <ResizablePanel defaultSize={62} minSize={40} className="min-h-0">
+          <ResizablePanel defaultSize="62%" minSize="40%" className="min-h-0">
             <div className="h-full w-full">
               <PreviewPanel
                 files={files}
