@@ -15,6 +15,8 @@ import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as ApiPublicNetlifyStartRouteImport } from './routes/api/public/netlify.start'
+import { Route as ApiPublicNetlifyCallbackRouteImport } from './routes/api/public/netlify.callback'
 
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
@@ -46,6 +48,17 @@ const PIdRoute = PIdRouteImport.update({
   path: '/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNetlifyStartRoute = ApiPublicNetlifyStartRouteImport.update({
+  id: '/api/public/netlify/start',
+  path: '/api/public/netlify/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicNetlifyCallbackRoute =
+  ApiPublicNetlifyCallbackRouteImport.update({
+    id: '/api/public/netlify/callback',
+    path: '/api/public/netlify/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +67,8 @@ export interface FileRoutesByFullPath {
   '/gallery': typeof GalleryRoute
   '/projects': typeof ProjectsRoute
   '/p/$id': typeof PIdRoute
+  '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
+  '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +77,8 @@ export interface FileRoutesByTo {
   '/gallery': typeof GalleryRoute
   '/projects': typeof ProjectsRoute
   '/p/$id': typeof PIdRoute
+  '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
+  '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,12 +88,30 @@ export interface FileRoutesById {
   '/gallery': typeof GalleryRoute
   '/projects': typeof ProjectsRoute
   '/p/$id': typeof PIdRoute
+  '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
+  '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analyze' | '/builder' | '/gallery' | '/projects' | '/p/$id'
+  fullPaths:
+    | '/'
+    | '/analyze'
+    | '/builder'
+    | '/gallery'
+    | '/projects'
+    | '/p/$id'
+    | '/api/public/netlify/callback'
+    | '/api/public/netlify/start'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analyze' | '/builder' | '/gallery' | '/projects' | '/p/$id'
+  to:
+    | '/'
+    | '/analyze'
+    | '/builder'
+    | '/gallery'
+    | '/projects'
+    | '/p/$id'
+    | '/api/public/netlify/callback'
+    | '/api/public/netlify/start'
   id:
     | '__root__'
     | '/'
@@ -85,6 +120,8 @@ export interface FileRouteTypes {
     | '/gallery'
     | '/projects'
     | '/p/$id'
+    | '/api/public/netlify/callback'
+    | '/api/public/netlify/start'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +131,8 @@ export interface RootRouteChildren {
   GalleryRoute: typeof GalleryRoute
   ProjectsRoute: typeof ProjectsRoute
   PIdRoute: typeof PIdRoute
+  ApiPublicNetlifyCallbackRoute: typeof ApiPublicNetlifyCallbackRoute
+  ApiPublicNetlifyStartRoute: typeof ApiPublicNetlifyStartRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +179,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/netlify/start': {
+      id: '/api/public/netlify/start'
+      path: '/api/public/netlify/start'
+      fullPath: '/api/public/netlify/start'
+      preLoaderRoute: typeof ApiPublicNetlifyStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/netlify/callback': {
+      id: '/api/public/netlify/callback'
+      path: '/api/public/netlify/callback'
+      fullPath: '/api/public/netlify/callback'
+      preLoaderRoute: typeof ApiPublicNetlifyCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -150,7 +203,18 @@ const rootRouteChildren: RootRouteChildren = {
   GalleryRoute: GalleryRoute,
   ProjectsRoute: ProjectsRoute,
   PIdRoute: PIdRoute,
+  ApiPublicNetlifyCallbackRoute: ApiPublicNetlifyCallbackRoute,
+  ApiPublicNetlifyStartRoute: ApiPublicNetlifyStartRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
