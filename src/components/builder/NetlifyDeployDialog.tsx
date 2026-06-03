@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import JSZip from "jszip";
-import { X, Rocket, ExternalLink, KeyRound, Loader2 } from "lucide-react";
+import { X, Rocket, ExternalLink, KeyRound, Loader2, LogIn } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -110,6 +110,31 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
     }
   };
 
+  const handleOAuthConnect = () => {
+    const popup = window.open(
+      "/api/public/netlify/start",
+      "netlify-oauth",
+      "width=620,height=720",
+    );
+    if (!popup) {
+      toast.error("Popup blocked. Allow popups and try again.");
+      return;
+    }
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data || data.source !== "netlify-oauth") return;
+      window.removeEventListener("message", onMessage);
+      if (data.ok && data.access_token) {
+        setToken(data.access_token);
+        localStorage.setItem(TOKEN_KEY, data.access_token);
+        toast.success("Connected to Netlify");
+      } else {
+        toast.error(`Netlify sign-in failed: ${data.error ?? "unknown"}`);
+      }
+    };
+    window.addEventListener("message", onMessage);
+  };
+
   const dialog = (
     <div
       className="fixed inset-0 z-[1000] flex items-center justify-center bg-background/80 p-4 backdrop-blur"
@@ -144,6 +169,22 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
           </div>
 
           <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleOAuthConnect}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #00C7B7, #0E7C7B)" }}
+            >
+              <LogIn className="h-4 w-4" />
+              {token ? "Reconnect Netlify account" : "Connect with Netlify"}
+            </button>
+
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              or paste a token
+              <span className="h-px flex-1 bg-border" />
+            </div>
+
             <div>
               <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground">
                 <KeyRound className="h-3 w-3" />
