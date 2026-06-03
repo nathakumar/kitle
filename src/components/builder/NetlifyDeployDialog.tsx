@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import JSZip from "jszip";
-import { X, Rocket, ExternalLink, KeyRound, Loader2 } from "lucide-react";
+import { X, Rocket, ExternalLink, KeyRound, Loader2, LogIn } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -108,6 +108,31 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
     } finally {
       setBusy(false);
     }
+  };
+
+  const handleOAuthConnect = () => {
+    const popup = window.open(
+      "/api/public/netlify/start",
+      "netlify-oauth",
+      "width=620,height=720",
+    );
+    if (!popup) {
+      toast.error("Popup blocked. Allow popups and try again.");
+      return;
+    }
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data;
+      if (!data || data.source !== "netlify-oauth") return;
+      window.removeEventListener("message", onMessage);
+      if (data.ok && data.access_token) {
+        setToken(data.access_token);
+        localStorage.setItem(TOKEN_KEY, data.access_token);
+        toast.success("Connected to Netlify");
+      } else {
+        toast.error(`Netlify sign-in failed: ${data.error ?? "unknown"}`);
+      }
+    };
+    window.addEventListener("message", onMessage);
   };
 
   const dialog = (
