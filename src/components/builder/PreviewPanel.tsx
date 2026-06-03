@@ -6,9 +6,10 @@ import {
   SandpackCodeEditor,
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings } from "lucide-react";
+import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket } from "lucide-react";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
+import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 
 interface Props {
   files: Record<string, string>;
@@ -42,6 +43,7 @@ async function downloadAsZip(files: Record<string, string>) {
 
 export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSettings }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
+  const [netlifyOpen, setNetlifyOpen] = useState(false);
 
   const hasFiles = Object.keys(files).length > 0;
   const showLoader = isLoading && tab === "preview";
@@ -129,6 +131,16 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
             className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={() => setNetlifyOpen(true)}
+            disabled={!hasFiles}
+            aria-label="Deploy to Netlify"
+            title="Deploy to Netlify"
+            className="flex h-8 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 text-[11px] font-medium text-foreground/80 transition-colors hover:bg-background/70 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Netlify</span>
           </button>
           <button
             onClick={onSettings}
@@ -280,6 +292,12 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
           )}
         </div>
       </div>
+
+      <NetlifyDeployDialog
+        open={netlifyOpen}
+        onClose={() => setNetlifyOpen(false)}
+        files={files}
+      />
     </div>
   );
 }
