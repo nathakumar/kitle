@@ -133,6 +133,15 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
             <Download className="h-3.5 w-3.5" />
           </button>
           <button
+            onClick={() => setNetlifyOpen(true)}
+            disabled={!hasFiles}
+            aria-label="Deploy to Netlify"
+            title="Deploy to Netlify"
+            className="flex h-8 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 text-[11px] font-medium text-foreground/80 transition-colors hover:bg-background/70 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Netlify</span>
+          <button
             onClick={onSettings}
             aria-label="Settings"
             className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-background/40 text-foreground/80 transition-colors hover:bg-background/70"
