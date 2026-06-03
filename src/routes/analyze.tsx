@@ -19,7 +19,7 @@ import {
   Legend,
 } from "recharts";
 import { toast } from "sonner";
-import { analyzeData, type AnalyzeResult, type ChartSpec } from "@/server/analyze.functions";
+import { analyzeData, type AnalyzeResult, type ChartSpec } from "@/lib/analyze.functions";
 
 export const Route = createFileRoute("/analyze")({
   head: () => ({

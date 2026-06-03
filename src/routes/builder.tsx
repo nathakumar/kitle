@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChatPanel, type ChatMessage } from "@/components/builder/ChatPanel";
 import { PreviewPanel } from "@/components/builder/PreviewPanel";
-import { generateProject } from "@/server/generate.functions";
+import { generateProject } from "@/lib/generate.functions";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import { saveProject as saveProjectCloud, getProject } from "@/lib/projects";
