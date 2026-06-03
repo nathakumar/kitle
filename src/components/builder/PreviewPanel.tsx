@@ -141,6 +141,7 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
           >
             <Rocket className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Netlify</span>
+          </button>
           <button
             onClick={onSettings}
             aria-label="Settings"
