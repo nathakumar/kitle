@@ -43,6 +43,7 @@ async function downloadAsZip(files: Record<string, string>) {
 
 export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSettings }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
+  const [netlifyOpen, setNetlifyOpen] = useState(false);
 
   const hasFiles = Object.keys(files).length > 0;
   const showLoader = isLoading && tab === "preview";
