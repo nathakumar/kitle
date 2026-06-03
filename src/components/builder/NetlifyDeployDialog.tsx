@@ -169,6 +169,22 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
           </div>
 
           <div className="space-y-3">
+            <button
+              type="button"
+              onClick={handleOAuthConnect}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #00C7B7, #0E7C7B)" }}
+            >
+              <LogIn className="h-4 w-4" />
+              {token ? "Reconnect Netlify account" : "Connect with Netlify"}
+            </button>
+
+            <div className="flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted-foreground">
+              <span className="h-px flex-1 bg-border" />
+              or paste a token
+              <span className="h-px flex-1 bg-border" />
+            </div>
+
             <div>
               <label className="mb-1 flex items-center gap-1.5 text-xs font-medium text-foreground">
                 <KeyRound className="h-3 w-3" />
