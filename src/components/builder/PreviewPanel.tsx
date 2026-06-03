@@ -292,6 +292,12 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
           )}
         </div>
       </div>
+
+      <NetlifyDeployDialog
+        open={netlifyOpen}
+        onClose={() => setNetlifyOpen(false)}
+        files={files}
+      />
     </div>
   );
 }
