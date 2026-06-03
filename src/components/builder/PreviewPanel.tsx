@@ -6,9 +6,10 @@ import {
   SandpackCodeEditor,
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings } from "lucide-react";
+import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket } from "lucide-react";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
+import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 
 interface Props {
   files: Record<string, string>;
