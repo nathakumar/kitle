@@ -16,6 +16,7 @@ import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PIdRouteImport } from './routes/p.$id'
 import { Route as ApiPublicNetlifyStartRouteImport } from './routes/api/public/netlify.start'
+import { Route as ApiPublicNetlifyDeployRouteImport } from './routes/api/public/netlify.deploy'
 import { Route as ApiPublicNetlifyCallbackRouteImport } from './routes/api/public/netlify.callback'
 
 const ProjectsRoute = ProjectsRouteImport.update({
@@ -53,6 +54,11 @@ const ApiPublicNetlifyStartRoute = ApiPublicNetlifyStartRouteImport.update({
   path: '/api/public/netlify/start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNetlifyDeployRoute = ApiPublicNetlifyDeployRouteImport.update({
+  id: '/api/public/netlify/deploy',
+  path: '/api/public/netlify/deploy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNetlifyCallbackRoute =
   ApiPublicNetlifyCallbackRouteImport.update({
     id: '/api/public/netlify/callback',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof ProjectsRoute
   '/p/$id': typeof PIdRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
+  '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
 }
 export interface FileRoutesByTo {
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/p/$id': typeof PIdRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
+  '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
 }
 export interface FileRoutesById {
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/projects': typeof ProjectsRoute
   '/p/$id': typeof PIdRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
+  '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
 }
 export interface FileRouteTypes {
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/p/$id'
     | '/api/public/netlify/callback'
+    | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/p/$id'
     | '/api/public/netlify/callback'
+    | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
   id:
     | '__root__'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/p/$id'
     | '/api/public/netlify/callback'
+    | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
   fileRoutesById: FileRoutesById
 }
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   ProjectsRoute: typeof ProjectsRoute
   PIdRoute: typeof PIdRoute
   ApiPublicNetlifyCallbackRoute: typeof ApiPublicNetlifyCallbackRoute
+  ApiPublicNetlifyDeployRoute: typeof ApiPublicNetlifyDeployRoute
   ApiPublicNetlifyStartRoute: typeof ApiPublicNetlifyStartRoute
 }
 
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNetlifyStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/netlify/deploy': {
+      id: '/api/public/netlify/deploy'
+      path: '/api/public/netlify/deploy'
+      fullPath: '/api/public/netlify/deploy'
+      preLoaderRoute: typeof ApiPublicNetlifyDeployRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/netlify/callback': {
       id: '/api/public/netlify/callback'
       path: '/api/public/netlify/callback'
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsRoute: ProjectsRoute,
   PIdRoute: PIdRoute,
   ApiPublicNetlifyCallbackRoute: ApiPublicNetlifyCallbackRoute,
+  ApiPublicNetlifyDeployRoute: ApiPublicNetlifyDeployRoute,
   ApiPublicNetlifyStartRoute: ApiPublicNetlifyStartRoute,
 }
 export const routeTree = rootRouteImport
