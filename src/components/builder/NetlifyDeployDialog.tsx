@@ -53,28 +53,6 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
     try {
       localStorage.setItem(TOKEN_KEY, token.trim());
 
-      // 1. Get or create the site
-      let siteId = existingSiteId.trim();
-      if (!siteId) {
-        const createRes = await fetch("https://api.netlify.com/api/v1/sites", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token.trim()}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(siteName.trim() ? { name: siteName.trim() } : {}),
-        });
-        if (!createRes.ok) {
-          const txt = await createRes.text();
-          throw new Error(`Could not create site: ${createRes.status} ${txt}`);
-        }
-        const site = await createRes.json();
-        siteId = site.id;
-        localStorage.setItem(SITE_KEY, siteId);
-        setExistingSiteId(siteId);
-      }
-
-      // 2. Build a ZIP of the project files
       const zip = new JSZip();
       Object.entries(files).forEach(([path, content]) => {
         const clean = path.startsWith("/") ? path.slice(1) : path;
@@ -82,25 +60,31 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
       });
       const blob = await zip.generateAsync({ type: "blob" });
 
-      // 3. Upload as a new deploy (Netlify build will pick up Vite automatically)
-      const deployRes = await fetch(
-        `https://api.netlify.com/api/v1/sites/${siteId}/deploys`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token.trim()}`,
-            "Content-Type": "application/zip",
-          },
-          body: blob,
+      const qs = new URLSearchParams();
+      if (existingSiteId.trim()) qs.set("siteId", existingSiteId.trim());
+      if (siteName.trim()) qs.set("siteName", siteName.trim());
+
+      const res = await fetch(`/api/public/netlify/deploy?${qs.toString()}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/zip",
+          "x-netlify-token": token.trim(),
         },
-      );
-      if (!deployRes.ok) {
-        const txt = await deployRes.text();
-        throw new Error(`Deploy failed: ${deployRes.status} ${txt}`);
+        body: blob,
+      });
+      const data = (await res.json()) as {
+        ok: boolean;
+        siteId?: string;
+        url?: string;
+        error?: string;
+      };
+      if (!data.ok) throw new Error(data.error || "Deploy failed");
+
+      if (data.siteId) {
+        localStorage.setItem(SITE_KEY, data.siteId);
+        setExistingSiteId(data.siteId);
       }
-      const deploy = await deployRes.json();
-      const url = deploy.deploy_ssl_url || deploy.deploy_url || deploy.ssl_url || deploy.url;
-      setDeployUrl(url);
+      setDeployUrl(data.url ?? null);
       toast.success("Deployed to Netlify");
     } catch (err) {
       console.error(err);
