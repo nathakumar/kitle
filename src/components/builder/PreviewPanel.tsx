@@ -6,10 +6,11 @@ import {
   SandpackCodeEditor,
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket } from "lucide-react";
+import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle } from "lucide-react";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
+import { VercelDeployDialog } from "./VercelDeployDialog";
 
 interface Props {
   files: Record<string, string>;
@@ -44,6 +45,7 @@ async function downloadAsZip(files: Record<string, string>) {
 export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSettings }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
   const [netlifyOpen, setNetlifyOpen] = useState(false);
+  const [vercelOpen, setVercelOpen] = useState(false);
 
   const hasFiles = Object.keys(files).length > 0;
   const showLoader = isLoading && tab === "preview";
@@ -141,6 +143,16 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
           >
             <Rocket className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Netlify</span>
+          </button>
+          <button
+            onClick={() => setVercelOpen(true)}
+            disabled={!hasFiles}
+            aria-label="Deploy to Vercel"
+            title="Deploy to Vercel"
+            className="flex h-8 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 text-[11px] font-medium text-foreground/80 transition-colors hover:bg-background/70 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Triangle className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Vercel</span>
           </button>
           <button
             onClick={onSettings}
@@ -296,6 +308,11 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
       <NetlifyDeployDialog
         open={netlifyOpen}
         onClose={() => setNetlifyOpen(false)}
+        files={files}
+      />
+      <VercelDeployDialog
+        open={vercelOpen}
+        onClose={() => setVercelOpen(false)}
         files={files}
       />
     </div>

@@ -15,6 +15,7 @@ import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as ApiPublicVercelDeployRouteImport } from './routes/api/public/vercel.deploy'
 import { Route as ApiPublicNetlifyStartRouteImport } from './routes/api/public/netlify.start'
 import { Route as ApiPublicNetlifyDeployRouteImport } from './routes/api/public/netlify.deploy'
 import { Route as ApiPublicNetlifyCallbackRouteImport } from './routes/api/public/netlify.callback'
@@ -49,6 +50,11 @@ const PIdRoute = PIdRouteImport.update({
   path: '/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicVercelDeployRoute = ApiPublicVercelDeployRouteImport.update({
+  id: '/api/public/vercel/deploy',
+  path: '/api/public/vercel/deploy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNetlifyStartRoute = ApiPublicNetlifyStartRouteImport.update({
   id: '/api/public/netlify/start',
   path: '/api/public/netlify/start',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
+  '/api/public/vercel/deploy': typeof ApiPublicVercelDeployRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
+  '/api/public/vercel/deploy': typeof ApiPublicVercelDeployRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -99,6 +107,7 @@ export interface FileRoutesById {
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
+  '/api/public/vercel/deploy': typeof ApiPublicVercelDeployRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -112,6 +121,7 @@ export interface FileRouteTypes {
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
+    | '/api/public/vercel/deploy'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -123,6 +133,7 @@ export interface FileRouteTypes {
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
+    | '/api/public/vercel/deploy'
   id:
     | '__root__'
     | '/'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
+    | '/api/public/vercel/deploy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -146,6 +158,7 @@ export interface RootRouteChildren {
   ApiPublicNetlifyCallbackRoute: typeof ApiPublicNetlifyCallbackRoute
   ApiPublicNetlifyDeployRoute: typeof ApiPublicNetlifyDeployRoute
   ApiPublicNetlifyStartRoute: typeof ApiPublicNetlifyStartRoute
+  ApiPublicVercelDeployRoute: typeof ApiPublicVercelDeployRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/vercel/deploy': {
+      id: '/api/public/vercel/deploy'
+      path: '/api/public/vercel/deploy'
+      fullPath: '/api/public/vercel/deploy'
+      preLoaderRoute: typeof ApiPublicVercelDeployRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/netlify/start': {
       id: '/api/public/netlify/start'
       path: '/api/public/netlify/start'
@@ -226,6 +246,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicNetlifyCallbackRoute: ApiPublicNetlifyCallbackRoute,
   ApiPublicNetlifyDeployRoute: ApiPublicNetlifyDeployRoute,
   ApiPublicNetlifyStartRoute: ApiPublicNetlifyStartRoute,
+  ApiPublicVercelDeployRoute: ApiPublicVercelDeployRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
