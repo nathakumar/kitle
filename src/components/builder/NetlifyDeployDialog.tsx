@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import JSZip from "jszip";
 import { X, Rocket, ExternalLink, KeyRound, Loader2, LogIn } from "lucide-react";
+import { bundleProject } from "@/lib/bundleProject";
 
 interface Props {
   open: boolean;
