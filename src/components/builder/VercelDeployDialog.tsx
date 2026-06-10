@@ -45,6 +45,8 @@ export function VercelDeployDialog({ open, onClose, files }: Props) {
     setBusy(true);
     try {
       localStorage.setItem(TOKEN_KEY, token.trim());
+      toast.info("Building project…");
+      const built = await bundleProject(files);
       const qs = new URLSearchParams();
       if (projectName.trim()) qs.set("name", projectName.trim());
 
@@ -54,7 +56,7 @@ export function VercelDeployDialog({ open, onClose, files }: Props) {
           "Content-Type": "application/json",
           "x-vercel-token": token.trim(),
         },
-        body: JSON.stringify({ files }),
+        body: JSON.stringify({ files: built }),
       });
       const data = (await res.json()) as {
         ok: boolean;
