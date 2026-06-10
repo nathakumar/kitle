@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { X, Rocket, ExternalLink, KeyRound, Loader2 } from "lucide-react";
+import { bundleProject } from "@/lib/bundleProject";
 
 interface Props {
   open: boolean;
