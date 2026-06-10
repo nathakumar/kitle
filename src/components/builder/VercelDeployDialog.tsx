@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import { X, Rocket, ExternalLink, KeyRound, Loader2 } from "lucide-react";
+import { bundleProject } from "@/lib/bundleProject";
 
 interface Props {
   open: boolean;
@@ -44,6 +45,8 @@ export function VercelDeployDialog({ open, onClose, files }: Props) {
     setBusy(true);
     try {
       localStorage.setItem(TOKEN_KEY, token.trim());
+      toast.info("Building project…");
+      const built = await bundleProject(files);
       const qs = new URLSearchParams();
       if (projectName.trim()) qs.set("name", projectName.trim());
 
@@ -53,7 +56,7 @@ export function VercelDeployDialog({ open, onClose, files }: Props) {
           "Content-Type": "application/json",
           "x-vercel-token": token.trim(),
         },
-        body: JSON.stringify({ files }),
+        body: JSON.stringify({ files: built }),
       });
       const data = (await res.json()) as {
         ok: boolean;

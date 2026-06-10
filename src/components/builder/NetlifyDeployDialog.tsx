@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { toast } from "sonner";
 import JSZip from "jszip";
 import { X, Rocket, ExternalLink, KeyRound, Loader2, LogIn } from "lucide-react";
+import { bundleProject } from "@/lib/bundleProject";
 
 interface Props {
   open: boolean;
@@ -53,8 +54,11 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
     try {
       localStorage.setItem(TOKEN_KEY, token.trim());
 
+      toast.info("Building project…");
+      const built = await bundleProject(files);
+
       const zip = new JSZip();
-      Object.entries(files).forEach(([path, content]) => {
+      Object.entries(built).forEach(([path, content]) => {
         const clean = path.startsWith("/") ? path.slice(1) : path;
         zip.file(clean, content);
       });
