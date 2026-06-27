@@ -264,3 +264,39 @@
   display: none;
   background: transparent;
 }
+
+/* Chat markdown rendering */
+.markdown-body { font-size: 13px; line-height: 1.55; color: inherit; }
+.markdown-body > * + * { margin-top: 0.6em; }
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+  font-weight: 600; line-height: 1.25; margin-top: 0.8em;
+}
+.markdown-body h1 { font-size: 1.2em; }
+.markdown-body h2 { font-size: 1.1em; }
+.markdown-body h3 { font-size: 1em; }
+.markdown-body p { margin: 0; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.25em; margin: 0; }
+.markdown-body ul { list-style: disc; }
+.markdown-body ol { list-style: decimal; }
+.markdown-body li + li { margin-top: 0.2em; }
+.markdown-body a { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+.markdown-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: rgba(127,127,127,0.18);
+}
+.markdown-body pre {
+  padding: 0.75em 0.9em; border-radius: 10px;
+  background: rgba(0,0,0,0.35); overflow-x: auto;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.markdown-body pre code { background: transparent; padding: 0; font-size: 0.85em; }
+.markdown-body blockquote {
+  border-left: 3px solid rgba(127,127,127,0.4); padding-left: 0.8em; color: inherit; opacity: 0.85;
+}
+.markdown-body table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+.markdown-body th, .markdown-body td { border: 1px solid rgba(127,127,127,0.25); padding: 0.35em 0.6em; text-align: left; }
+.markdown-body th { background: rgba(127,127,127,0.12); }
+.markdown-body hr { border: 0; border-top: 1px solid rgba(127,127,127,0.25); }
