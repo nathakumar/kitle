@@ -43,29 +43,42 @@ function BuilderPage() {
   const [saving, setSaving] = useState(false);
   const initialFired = useRef(false);
 
-  const handleSend = async (text: string) => {
-    if (authLoading) return; // wait for session to hydrate
+  const handleSend = async (text: string, mode: ChatMode = "website") => {
+    if (authLoading) return;
     if (!user) {
-      toast.error("Please sign in to generate");
+      toast.error("Please sign in to continue");
       setAuthOpen(true);
       return;
     }
-    const userMsg: ChatMessage = { role: "user", content: text };
+    const userMsg: ChatMessage = { role: "user", content: text, mode };
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
     setIsLoading(true);
 
+    // BYOK: read Gemini key from localStorage (set via ChatPanel)
+    let userApiKey: string | undefined;
+    let userModel: string | undefined;
+    try {
+      userApiKey = localStorage.getItem("nuvic.gemini.apiKey") || undefined;
+      userModel = localStorage.getItem("nuvic.gemini.model") || undefined;
+    } catch {}
+
     try {
       const result = await generateProject({
-        data: { messages: nextMessages, currentFiles: files },
+        data: { messages: nextMessages, currentFiles: files, mode, userApiKey, userModel },
       });
-      setFiles(result.files);
-      setMessages([...nextMessages, { role: "assistant", content: result.summary }]);
-      setMobileView("preview");
+      if (result.outputs === "files") {
+        setFiles(result.files);
+        setMobileView("preview");
+      }
+      setMessages([
+        ...nextMessages,
+        { role: "assistant", content: result.summary, mode: result.mode, outputs: result.outputs },
+      ]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong.";
       toast.error(msg);
-      setMessages([...nextMessages, { role: "assistant", content: `⚠️ ${msg}` }]);
+      setMessages([...nextMessages, { role: "assistant", content: `⚠️ ${msg}`, mode, outputs: "text" }]);
     } finally {
       setIsLoading(false);
     }
