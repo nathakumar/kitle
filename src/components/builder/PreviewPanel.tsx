@@ -6,15 +6,22 @@ import {
   SandpackCodeEditor,
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle } from "lucide-react";
+import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle, MessageSquare } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 import { VercelDeployDialog } from "./VercelDeployDialog";
+import { MODES, type ChatMode } from "@/lib/modes";
 
 interface Props {
   files: Record<string, string>;
   isLoading?: boolean;
+  /** Current chat mode — only "website" uses Sandpack; others render a "normal preview". */
+  mode?: ChatMode;
+  /** Latest assistant text — used for non-sandbox preview modes. */
+  assistantText?: string;
   /** Mobile-only: show a back button that switches to chat view */
   onBack?: () => void;
   /** Optional GitHub URL — falls back to opening github.com */
