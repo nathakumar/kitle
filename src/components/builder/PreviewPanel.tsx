@@ -189,6 +189,29 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
             >
               <BentoLoader label={hasFiles ? "Updating your app" : "Generating your app"} />
             </div>
+          ) : !isSandbox ? (
+            <div className="h-full w-full overflow-auto p-6 sm:p-10 builder-scroll">
+              {hasText ? (
+                <article className="markdown-body mx-auto max-w-3xl text-[14px] leading-relaxed text-foreground/90">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-3 py-1 text-[11px] text-muted-foreground">
+                    <span>{modeDef.icon}</span>
+                    <span>{modeDef.label}</span>
+                  </div>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{assistantText}</ReactMarkdown>
+                </article>
+              ) : (
+                <div className="flex h-full items-center justify-center text-center">
+                  <div className="max-w-sm">
+                    <div className="mx-auto mb-4 text-4xl">{modeDef.icon}</div>
+                    <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
+                    <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Send a message on the left — the response will appear here as a clean reading view (no sandbox).
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           ) : !hasFiles ? (
             <div className="relative flex h-full items-center justify-center p-8">
               <div
