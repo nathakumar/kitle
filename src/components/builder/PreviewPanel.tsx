@@ -6,15 +6,22 @@ import {
   SandpackCodeEditor,
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle } from "lucide-react";
+import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle, MessageSquare } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 import { VercelDeployDialog } from "./VercelDeployDialog";
+import { MODES, type ChatMode } from "@/lib/modes";
 
 interface Props {
   files: Record<string, string>;
   isLoading?: boolean;
+  /** Current chat mode — only "website" uses Sandpack; others render a "normal preview". */
+  mode?: ChatMode;
+  /** Latest assistant text — used for non-sandbox preview modes. */
+  assistantText?: string;
   /** Mobile-only: show a back button that switches to chat view */
   onBack?: () => void;
   /** Optional GitHub URL — falls back to opening github.com */
@@ -42,12 +49,15 @@ async function downloadAsZip(files: Record<string, string>) {
   URL.revokeObjectURL(url);
 }
 
-export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSettings }: Props) {
+export function PreviewPanel({ files, isLoading = false, mode = "website", assistantText = "", onBack, githubUrl, onSettings }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
   const [netlifyOpen, setNetlifyOpen] = useState(false);
   const [vercelOpen, setVercelOpen] = useState(false);
 
+  const isSandbox = mode === "website";
+  const modeDef = MODES[mode];
   const hasFiles = Object.keys(files).length > 0;
+  const hasText = assistantText.trim().length > 0;
   const showLoader = isLoading && tab === "preview";
 
   const handleDownload = () => {
@@ -84,7 +94,7 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
 
-        {/* Centered pill toggle */}
+        {/* Centered pill toggle — Code tab only shown for the sandboxed website mode */}
         <div className="mx-auto inline-flex rounded-full border border-border/60 bg-background/40 p-0.5 md:mx-0">
           <button
             onClick={() => setTab("preview")}
@@ -96,21 +106,23 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
             }
           >
             {tab === "preview" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-            <Eye className="h-3 w-3 md:hidden" />
-            Preview
+            {isSandbox ? <Eye className="h-3 w-3 md:hidden" /> : <MessageSquare className="h-3 w-3 md:hidden" />}
+            {isSandbox ? "Preview" : modeDef.label}
           </button>
-          <button
-            onClick={() => setTab("code")}
-            className={
-              "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
-              (tab === "code"
-                ? "bg-foreground text-background shadow-sm"
-                : "text-muted-foreground hover:text-foreground")
-            }
-          >
-            <Code2 className="h-3 w-3 md:hidden" />
-            Code
-          </button>
+          {isSandbox && (
+            <button
+              onClick={() => setTab("code")}
+              className={
+                "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
+                (tab === "code"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground")
+              }
+            >
+              <Code2 className="h-3 w-3 md:hidden" />
+              Code
+            </button>
+          )}
         </div>
 
         {/* Right-side actions */}
@@ -176,6 +188,29 @@ export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSe
               style={{ background: "var(--builder-surface)" }}
             >
               <BentoLoader label={hasFiles ? "Updating your app" : "Generating your app"} />
+            </div>
+          ) : !isSandbox ? (
+            <div className="h-full w-full overflow-auto p-6 sm:p-10 builder-scroll">
+              {hasText ? (
+                <article className="markdown-body mx-auto max-w-3xl text-[14px] leading-relaxed text-foreground/90">
+                  <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-3 py-1 text-[11px] text-muted-foreground">
+                    <span>{modeDef.icon}</span>
+                    <span>{modeDef.label}</span>
+                  </div>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{assistantText}</ReactMarkdown>
+                </article>
+              ) : (
+                <div className="flex h-full items-center justify-center text-center">
+                  <div className="max-w-sm">
+                    <div className="mx-auto mb-4 text-4xl">{modeDef.icon}</div>
+                    <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
+                    <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Send a message on the left — the response will appear here as a clean reading view (no sandbox).
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           ) : !hasFiles ? (
             <div className="relative flex h-full items-center justify-center p-8">

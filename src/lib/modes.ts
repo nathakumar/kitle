@@ -52,22 +52,21 @@ The "summary" field is a 1-2 sentence human description of what changed or was b
   },
   "data-analysis": {
     id: "data-analysis",
-    label: "Data Analysis (HTML)",
+    label: "Data Analysis",
     command: "/data",
-    description: "Standalone HTML report with charts and tables",
+    description: "Markdown analysis report with insights and ASCII charts",
     icon: "📊",
-    outputs: "files",
-    systemPrompt: `You are a senior data analyst building a STANDALONE single-file HTML data analysis report that runs inside a Sandpack "react-ts" sandbox.
+    outputs: "text",
+    systemPrompt: `You are a senior data analyst. Given the user's described dataset or question, produce a thorough markdown analysis report containing:
 
-${BASE_BUILD_RULES}
+1. **Executive Summary** — 2-3 sentences.
+2. **Key Metrics** — bullet list of 4-8 KPIs with values.
+3. **Findings** — sectioned insights with headings.
+4. **Charts** — render small ASCII / unicode bar charts in code fences, plus markdown tables for distributions.
+5. **Recommendations** — prioritized action items.
+6. **Methodology & Caveats** — short note on assumptions.
 
-DATA ANALYSIS FOCUS:
-- Build a single-page report in React with: an executive summary, 4-8 KPI cards, multiple charts (bar, line, donut, area) built with SVG ONLY (no chart libs), a sortable data table, key insights & recommendations.
-- Generate realistic seed data inline in /data/dataset.ts that matches the user's described domain.
-- All charts must be hand-coded SVG components in /components/charts/.
-- Use a clean analytic dashboard aesthetic: neutral surfaces, accent color for highlights, clear hierarchy.
-
-Summary is a 1-2 sentence description of the analysis.`,
+Use clean markdown (headings, lists, tables, code fences). Be concrete and quantitative. If the user did not supply data, generate realistic seed data and clearly label it as illustrative.`,
   },
   education: {
     id: "education",
