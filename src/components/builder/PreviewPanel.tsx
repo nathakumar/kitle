@@ -49,12 +49,15 @@ async function downloadAsZip(files: Record<string, string>) {
   URL.revokeObjectURL(url);
 }
 
-export function PreviewPanel({ files, isLoading = false, onBack, githubUrl, onSettings }: Props) {
+export function PreviewPanel({ files, isLoading = false, mode = "website", assistantText = "", onBack, githubUrl, onSettings }: Props) {
   const [tab, setTab] = useState<Tab>("preview");
   const [netlifyOpen, setNetlifyOpen] = useState(false);
   const [vercelOpen, setVercelOpen] = useState(false);
 
+  const isSandbox = mode === "website";
+  const modeDef = MODES[mode];
   const hasFiles = Object.keys(files).length > 0;
+  const hasText = assistantText.trim().length > 0;
   const showLoader = isLoading && tab === "preview";
 
   const handleDownload = () => {
