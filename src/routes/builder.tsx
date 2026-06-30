@@ -209,6 +209,8 @@ function BuilderPage() {
           <PreviewPanel
             files={files}
             isLoading={isLoading}
+            mode={currentMode}
+            assistantText={lastAssistantText}
             onBack={() => setMobileView("chat")}
             onSettings={() => setSettingsOpen((v) => !v)}
           />
