@@ -94,7 +94,7 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
 
-        {/* Centered pill toggle */}
+        {/* Centered pill toggle — Code tab only shown for the sandboxed website mode */}
         <div className="mx-auto inline-flex rounded-full border border-border/60 bg-background/40 p-0.5 md:mx-0">
           <button
             onClick={() => setTab("preview")}
@@ -106,21 +106,23 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
             }
           >
             {tab === "preview" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-            <Eye className="h-3 w-3 md:hidden" />
-            Preview
+            {isSandbox ? <Eye className="h-3 w-3 md:hidden" /> : <MessageSquare className="h-3 w-3 md:hidden" />}
+            {isSandbox ? "Preview" : modeDef.label}
           </button>
-          <button
-            onClick={() => setTab("code")}
-            className={
-              "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
-              (tab === "code"
-                ? "bg-foreground text-background shadow-sm"
-                : "text-muted-foreground hover:text-foreground")
-            }
-          >
-            <Code2 className="h-3 w-3 md:hidden" />
-            Code
-          </button>
+          {isSandbox && (
+            <button
+              onClick={() => setTab("code")}
+              className={
+                "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
+                (tab === "code"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground")
+              }
+            >
+              <Code2 className="h-3 w-3 md:hidden" />
+              Code
+            </button>
+          )}
         </div>
 
         {/* Right-side actions */}
