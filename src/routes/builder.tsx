@@ -129,6 +129,22 @@ function BuilderPage() {
 
   const hasFiles = Object.keys(files).length > 0;
 
+  // Determine current mode + latest assistant text for preview rendering.
+  const currentMode: ChatMode = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.mode) return m.mode;
+    }
+    return "website";
+  })();
+  const lastAssistantText = (() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.role === "assistant") return m.content;
+    }
+    return "";
+  })();
+
   const openSaveDialog = () => {
     if (!hasFiles) {
       toast.error("Nothing to save yet — generate something first.");
