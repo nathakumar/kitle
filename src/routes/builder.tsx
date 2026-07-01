@@ -39,6 +39,7 @@ function BuilderPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
+  const [draftMode, setDraftMode] = useState<ChatMode>("website");
   const [saveVisibility, setSaveVisibility] = useState<"private" | "public">("private");
   const [saving, setSaving] = useState(false);
   const initialFired = useRef(false);
