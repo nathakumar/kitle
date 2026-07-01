@@ -164,7 +164,25 @@ function AnalyzePage() {
         {result && (
           <div className="mt-10 space-y-10">
             <section className="rounded-2xl border border-border/60 bg-card/40 p-6">
-              <h2 className="text-lg font-semibold">Executive summary</h2>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <h2 className="text-lg font-semibold">Executive summary</h2>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => downloadReport(result, "md")}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-xs font-medium text-foreground/90 transition hover:bg-background/70"
+                  >
+                    ⬇ Markdown
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadReport(result, "json")}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-xs font-medium text-foreground/90 transition hover:bg-background/70"
+                  >
+                    ⬇ JSON
+                  </button>
+                </div>
+              </div>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{result.summary}</p>
             </section>
 
