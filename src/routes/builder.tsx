@@ -39,6 +39,7 @@ function BuilderPage() {
   const [authOpen, setAuthOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
+  const [draftMode, setDraftMode] = useState<ChatMode>("website");
   const [saveVisibility, setSaveVisibility] = useState<"private" | "public">("private");
   const [saving, setSaving] = useState(false);
   const initialFired = useRef(false);
@@ -135,7 +136,7 @@ function BuilderPage() {
       const m = messages[i];
       if (m.mode) return m.mode;
     }
-    return "website";
+    return draftMode;
   })();
   const lastAssistantText = (() => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -196,7 +197,7 @@ function BuilderPage() {
         }
       >
         <div className="h-full w-full">
-          <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
+          <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} onModeChange={setDraftMode} />
         </div>
       </div>
       <div
@@ -222,7 +223,7 @@ function BuilderPage() {
         <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
           <ResizablePanel defaultSize="38%" minSize="22%" maxSize="60%" className="min-h-0">
             <div className="h-full w-full">
-              <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
+              <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} onModeChange={setDraftMode} />
             </div>
           </ResizablePanel>
           <ResizableHandle
