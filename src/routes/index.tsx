@@ -354,16 +354,19 @@ function LandingPage() {
     if (!trimmed || submittingRef.current) return;
     if (authLoading) return;
     if (!user) {
-      toast.error("Please sign in to generate a website");
+      toast.error("Please sign in to continue");
       setAuthOpen(true);
       return;
     }
+    // If the user already typed a /command, respect it; otherwise prepend the selected mode.
+    const { mode: parsedMode } = parseSlashCommand(trimmed);
+    const finalPrompt = parsedMode ? trimmed : `${MODES[mode].command} ${trimmed}`;
     submittingRef.current = true;
     setSubmitting(true);
-    void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
+    void navigate({ to: "/builder", search: { prompt: finalPrompt } }).catch(() => {
       submittingRef.current = false;
       setSubmitting(false);
-      window.location.assign(`/builder?prompt=${encodeURIComponent(trimmed)}`);
+      window.location.assign(`/builder?prompt=${encodeURIComponent(finalPrompt)}`);
     });
   };
 
