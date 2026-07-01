@@ -109,8 +109,9 @@ function AnalyzePage() {
             Analyze & visualize anything
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Upload a CSV / JSON / text file, paste data, or just describe what you want analyzed.
-            You'll get KPIs, insights, charts, and recommendations.
+            Upload a CSV / JSON / text file, paste data, or just describe what you want visualized —
+            e.g. <em>"quarterly SaaS revenue for a mid-market startup"</em>. You'll get KPIs,
+            insights, charts, and a downloadable report.
           </p>
         </section>
 
