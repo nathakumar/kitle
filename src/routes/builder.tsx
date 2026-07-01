@@ -136,7 +136,7 @@ function BuilderPage() {
       const m = messages[i];
       if (m.mode) return m.mode;
     }
-    return "website";
+    return draftMode;
   })();
   const lastAssistantText = (() => {
     for (let i = messages.length - 1; i >= 0; i--) {
