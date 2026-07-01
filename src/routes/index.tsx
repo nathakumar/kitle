@@ -311,6 +311,8 @@ function LandingPage() {
   const [savedOpen, setSavedOpen] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
+  const [mode, setMode] = useState<ChatMode>("website");
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!savedOpen) return;
