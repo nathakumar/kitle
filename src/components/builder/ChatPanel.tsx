@@ -17,14 +17,16 @@ interface Props {
   messages: ChatMessage[];
   isLoading: boolean;
   onSend: (text: string, mode: ChatMode) => void;
+  onModeChange?: (mode: ChatMode) => void;
 }
 
 const KEY_STORAGE = "nuvic.gemini.apiKey";
 const MODEL_STORAGE = "nuvic.gemini.model";
 
-export function ChatPanel({ messages, isLoading, onSend }: Props) {
+export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) {
   const [input, setInput] = useState("");
-  const [mode, setMode] = useState<ChatMode>("website");
+  const [mode, _setMode] = useState<ChatMode>("website");
+  const setMode = (m: ChatMode) => { _setMode(m); onModeChange?.(m); };
   const [accountOpen, setAccountOpen] = useState(false);
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashIdx, setSlashIdx] = useState(0);
