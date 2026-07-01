@@ -49,6 +49,58 @@ const PALETTE = [
   "oklch(0.75 0.16 330)",
 ];
 
+function triggerDownload(filename: string, content: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadReport(result: AnalyzeResult, format: "md" | "json") {
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  if (format === "json") {
+    triggerDownload(`analysis-${stamp}.json`, JSON.stringify(result, null, 2), "application/json");
+    return;
+  }
+  const lines: string[] = [];
+  lines.push(`# Data Analysis Report`, "", `_Generated ${new Date().toLocaleString()}_`, "");
+  lines.push(`## Executive Summary`, "", result.summary ?? "", "");
+  if (result.kpis?.length) {
+    lines.push(`## Key Metrics`, "");
+    for (const k of result.kpis) lines.push(`- **${k.label}:** ${k.value}${k.delta ? ` (${k.delta})` : ""}`);
+    lines.push("");
+  }
+  if (result.insights?.length) {
+    lines.push(`## Insights`, "");
+    for (const it of result.insights) lines.push(`### ${it.title}`, "", it.detail, "");
+  }
+  if (result.charts?.length) {
+    lines.push(`## Visualizations`, "");
+    for (const c of result.charts) {
+      lines.push(`### ${c.title} (${c.type})`, "");
+      if (c.description) lines.push(c.description, "");
+      const headers = [c.xKey, ...c.yKeys];
+      lines.push(`| ${headers.join(" | ")} |`);
+      lines.push(`| ${headers.map(() => "---").join(" | ")} |`);
+      for (const row of c.data) {
+        lines.push(`| ${headers.map((h) => String(row[h] ?? "")).join(" | ")} |`);
+      }
+      lines.push("");
+    }
+  }
+  if (result.recommendations?.length) {
+    lines.push(`## Recommendations`, "");
+    for (const r of result.recommendations) lines.push(`- ${r}`);
+    lines.push("");
+  }
+  triggerDownload(`analysis-${stamp}.md`, lines.join("\n"), "text/markdown");
+}
+
 function AnalyzePage() {
   const analyze = useServerFn(analyzeData);
   const promptRef = useRef<HTMLTextAreaElement>(null);
