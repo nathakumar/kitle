@@ -5,6 +5,7 @@ import { TemplatePreviewModal } from "@/components/TemplatePreviewModal";
 import { UserMenu } from "@/components/UserMenu";
 import { AuthDialog } from "@/components/AuthDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { MODE_LIST, MODES, parseSlashCommand, type ChatMode } from "@/lib/modes";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -310,6 +311,8 @@ function LandingPage() {
   const [savedOpen, setSavedOpen] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
+  const [mode, setMode] = useState<ChatMode>("website");
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!savedOpen) return;
@@ -351,16 +354,19 @@ function LandingPage() {
     if (!trimmed || submittingRef.current) return;
     if (authLoading) return;
     if (!user) {
-      toast.error("Please sign in to generate a website");
+      toast.error("Please sign in to continue");
       setAuthOpen(true);
       return;
     }
+    // If the user already typed a /command, respect it; otherwise prepend the selected mode.
+    const { mode: parsedMode } = parseSlashCommand(trimmed);
+    const finalPrompt = parsedMode ? trimmed : `${MODES[mode].command} ${trimmed}`;
     submittingRef.current = true;
     setSubmitting(true);
-    void navigate({ to: "/builder", search: { prompt: trimmed } }).catch(() => {
+    void navigate({ to: "/builder", search: { prompt: finalPrompt } }).catch(() => {
       submittingRef.current = false;
       setSubmitting(false);
-      window.location.assign(`/builder?prompt=${encodeURIComponent(trimmed)}`);
+      window.location.assign(`/builder?prompt=${encodeURIComponent(finalPrompt)}`);
     });
   };
 
@@ -469,7 +475,7 @@ function LandingPage() {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKey}
             rows={3}
-            placeholder="Build an app"
+            placeholder={`${MODES[mode].icon}  ${MODES[mode].command} — ${MODES[mode].description}`}
             className="w-full resize-none bg-transparent px-3 pt-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5 sm:pt-4 sm:text-base"
           />
           <div className="flex items-center justify-between gap-2 px-2 pb-1 sm:px-3 sm:pb-2">
@@ -477,9 +483,56 @@ function LandingPage() {
               <CircleButton aria-label="Attach">
                 <PaperclipIcon />
               </CircleButton>
-              <CircleButton aria-label="Model">
-                <ChipIcon />
-              </CircleButton>
+              {/* Mode / slash-command chooser */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setModeMenuOpen((v) => !v)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground/90 transition-colors hover:bg-muted"
+                  aria-label="Choose command"
+                >
+                  <span className="text-[13px] leading-none">{MODES[mode].icon}</span>
+                  <span className="hidden sm:inline">{MODES[mode].command}</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {modeMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setModeMenuOpen(false)}
+                    />
+                    <div className="absolute bottom-full left-0 z-50 mb-2 w-72 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-2xl">
+                      <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Choose a command</div>
+                      {MODE_LIST.map((m) => (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            setMode(m.id);
+                            setModeMenuOpen(false);
+                            promptRef.current?.focus();
+                          }}
+                          className={
+                            "flex w-full items-start gap-2.5 rounded-lg px-2 py-2 text-left text-xs transition-colors hover:bg-muted " +
+                            (m.id === mode ? "bg-muted/60" : "")
+                          }
+                        >
+                          <span className="mt-0.5 text-base leading-none">{m.icon}</span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex items-center gap-1.5">
+                              <span className="font-semibold text-foreground">{m.label}</span>
+                              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{m.command}</span>
+                            </span>
+                            <span className="mt-0.5 block text-[11px] text-muted-foreground">{m.description}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <CircleButton aria-label="Templates" onClick={() => setTemplatesOpen(true)}>
                 <TemplatesIcon />
               </CircleButton>
