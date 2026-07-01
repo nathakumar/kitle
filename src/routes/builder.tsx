@@ -197,7 +197,7 @@ function BuilderPage() {
         }
       >
         <div className="h-full w-full">
-          <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
+          <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} onModeChange={setDraftMode} />
         </div>
       </div>
       <div
@@ -223,7 +223,7 @@ function BuilderPage() {
         <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
           <ResizablePanel defaultSize="38%" minSize="22%" maxSize="60%" className="min-h-0">
             <div className="h-full w-full">
-              <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} />
+              <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} onModeChange={setDraftMode} />
             </div>
           </ResizablePanel>
           <ResizableHandle
