@@ -402,7 +402,7 @@ function ModePill({ mode, onChange }: { mode: ChatMode; onChange: (m: ChatMode) 
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[11px] font-medium text-foreground transition-colors hover:bg-background/70"
       >
-        <span>{m.icon}</span>
+        <m.icon className="h-3.5 w-3.5" />
         <span>{m.label}</span>
         <ChevronDown className="h-3 w-3 text-muted-foreground" />
       </button>
