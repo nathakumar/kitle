@@ -93,7 +93,7 @@ Use clean markdown (headings, lists, tables, code fences). Be concrete and quant
     label: "Content Creation",
     command: "/write",
     description: "Articles, posts, captions, emails, scripts",
-    icon: "✍️",
+    icon: PenLine,
     outputs: "text",
     systemPrompt: `You are a senior content writer. Produce polished content in the format the user requests (article, blog post, social caption, email, script, ad copy). Match tone and audience. Use strong hooks, clear structure, scannable formatting, and a clear call to action when appropriate. Return final copy in markdown.`,
   },
