@@ -452,7 +452,7 @@ function EmptyState({ onPick }: { onPick: (id: ChatMode) => void }) {
             onClick={() => onPick(m.id)}
             className="group flex items-start gap-2 rounded-xl border border-border/60 bg-background/40 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:bg-background/70"
           >
-            <span className="text-lg leading-none">{m.icon}</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground/80"><m.icon className="h-4 w-4" /></span>
             <span className="flex-1">
               <span className="flex items-center justify-between gap-2">
                 <span className="text-[12px] font-semibold text-foreground">{m.label}</span>
