@@ -519,7 +519,7 @@ function LandingPage() {
                             (m.id === mode ? "bg-muted/60" : "")
                           }
                         >
-                          <span className="mt-0.5 text-base leading-none">{m.icon}</span>
+                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-foreground/80"><m.icon className="h-3.5 w-3.5" /></span>
                           <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-1.5">
                               <span className="font-semibold text-foreground">{m.label}</span>
