@@ -123,7 +123,11 @@ function BuilderPage() {
         return;
       }
       initialFired.current = true;
-      handleSend(prompt);
+      const { mode: parsedMode, rest } = parseSlashCommand(prompt);
+      const finalMode: ChatMode = parsedMode ?? "website";
+      const finalText = parsedMode ? (rest.trim() || prompt) : prompt;
+      setDraftMode(finalMode);
+      handleSend(finalText, finalMode);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prompt, saved, user, authLoading]);
