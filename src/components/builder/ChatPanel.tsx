@@ -253,7 +253,7 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                 <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/60" style={{ animationDelay: "0ms" }} />
                 <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/60" style={{ animationDelay: "150ms" }} />
                 <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/60" style={{ animationDelay: "300ms" }} />
-                <span className="ml-2 text-[11px] text-muted-foreground">{activeMode.icon} {activeMode.label} — thinking…</span>
+                <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground"><activeMode.icon className="h-3 w-3" /> {activeMode.label} — thinking…</span>
               </div>
             </div>
           </div>
