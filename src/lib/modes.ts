@@ -34,7 +34,7 @@ export const MODES: Record<ChatMode, ModeDef> = {
     label: "Website Build",
     command: "/website",
     description: "Build a polished multi-page React + Vite website",
-    icon: "🌐",
+    icon: Globe,
     outputs: "files",
     systemPrompt: `You are a senior product engineer + designer building AMBITIOUS, polished, multi-page React + TypeScript + Vite apps that run inside a Sandpack "react-ts" sandbox.
 
