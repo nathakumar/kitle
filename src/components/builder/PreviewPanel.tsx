@@ -187,7 +187,7 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               className="relative flex h-full w-full items-center justify-center"
               style={{ background: "var(--builder-surface)" }}
             >
-              <BentoLoader label={isSandbox ? (hasFiles ? "Updating your app" : "Generating your app") : `${modeDef.icon} Working on ${modeDef.label.toLowerCase()}…`} />
+              <BentoLoader label={isSandbox ? (hasFiles ? "Updating your app" : "Generating your app") : `Working on ${modeDef.label.toLowerCase()}…`} />
             </div>
           ) : !isSandbox ? (
             <div className="h-full w-full overflow-auto p-6 sm:p-10 builder-scroll">
