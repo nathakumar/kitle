@@ -9,7 +9,7 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { saveProject as saveProjectCloud, getProject } from "@/lib/projects";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import type { ChatMode } from "@/lib/modes";
+import { parseSlashCommand, type ChatMode } from "@/lib/modes";
 
 type BuilderSearch = { prompt?: string; saved?: string };
 type MobileView = "chat" | "preview";
