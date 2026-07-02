@@ -279,7 +279,7 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                   (i === slashIdx ? "bg-muted" : "hover:bg-muted/60")
                 }
               >
-                <span className="text-base leading-none">{m.icon}</span>
+                <m.icon className="h-4 w-4 text-foreground/80" />
                 <span className="flex-1">
                   <span className="block text-[13px] font-medium text-foreground">{m.label}</span>
                   <span className="block text-[11px] text-muted-foreground">{m.description}</span>
