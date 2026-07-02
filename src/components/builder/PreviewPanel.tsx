@@ -194,7 +194,7 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               {hasText ? (
                 <article className="markdown-body mx-auto max-w-3xl text-[14px] leading-relaxed text-foreground/90">
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-3 py-1 text-[11px] text-muted-foreground">
-                    <span>{modeDef.icon}</span>
+                    <modeDef.icon className="h-3.5 w-3.5" />
                     <span>{modeDef.label}</span>
                   </div>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{assistantText}</ReactMarkdown>
