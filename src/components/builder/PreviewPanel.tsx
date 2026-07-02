@@ -202,7 +202,7 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               ) : (
                 <div className="flex h-full items-center justify-center text-center">
                   <div className="max-w-sm">
-                    <div className="mx-auto mb-4 text-4xl">{modeDef.icon}</div>
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-background/60 text-foreground/80"><modeDef.icon className="h-6 w-6" /></div>
                     <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
                     <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
                     <p className="mt-3 text-xs text-muted-foreground">
