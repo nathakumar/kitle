@@ -475,7 +475,7 @@ function LandingPage() {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKey}
             rows={3}
-            placeholder={`${MODES[mode].icon}  ${MODES[mode].command} — ${MODES[mode].description}`}
+            placeholder={`${MODES[mode].command} — ${MODES[mode].description}`}
             className="w-full resize-none bg-transparent px-3 pt-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5 sm:pt-4 sm:text-base"
           />
           <div className="flex items-center justify-between gap-2 px-2 pb-1 sm:px-3 sm:pb-2">
@@ -491,7 +491,7 @@ function LandingPage() {
                   className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground/90 transition-colors hover:bg-muted"
                   aria-label="Choose command"
                 >
-                  <span className="text-[13px] leading-none">{MODES[mode].icon}</span>
+                  {(() => { const Icon = MODES[mode].icon; return <Icon className="h-3.5 w-3.5" />; })()}
                   <span className="hidden sm:inline">{MODES[mode].command}</span>
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
@@ -519,7 +519,7 @@ function LandingPage() {
                             (m.id === mode ? "bg-muted/60" : "")
                           }
                         >
-                          <span className="mt-0.5 text-base leading-none">{m.icon}</span>
+                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-foreground/80"><m.icon className="h-3.5 w-3.5" /></span>
                           <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-1.5">
                               <span className="font-semibold text-foreground">{m.label}</span>

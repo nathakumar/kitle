@@ -1,3 +1,5 @@
+import { Globe, BarChart3, GraduationCap, MessageSquare, PenLine, type LucideIcon } from "lucide-react";
+
 export type ChatMode =
   | "website"
   | "data-analysis"
@@ -10,7 +12,7 @@ export type ModeDef = {
   label: string;
   command: string;
   description: string;
-  icon: string; // emoji for quick UI
+  icon: LucideIcon;
   outputs: "files" | "text";
   systemPrompt: string;
 };
@@ -32,7 +34,7 @@ export const MODES: Record<ChatMode, ModeDef> = {
     label: "Website Build",
     command: "/website",
     description: "Build a polished multi-page React + Vite website",
-    icon: "🌐",
+    icon: Globe,
     outputs: "files",
     systemPrompt: `You are a senior product engineer + designer building AMBITIOUS, polished, multi-page React + TypeScript + Vite apps that run inside a Sandpack "react-ts" sandbox.
 
@@ -55,7 +57,7 @@ The "summary" field is a 1-2 sentence human description of what changed or was b
     label: "Data Analysis",
     command: "/data",
     description: "Markdown analysis report with insights and ASCII charts",
-    icon: "📊",
+    icon: BarChart3,
     outputs: "text",
     systemPrompt: `You are a senior data analyst. Given the user's described dataset or question, produce a thorough markdown analysis report containing:
 
@@ -73,7 +75,7 @@ Use clean markdown (headings, lists, tables, code fences). Be concrete and quant
     label: "Educational Chat",
     command: "/learn",
     description: "Teach with clear structure, examples and quizzes",
-    icon: "🎓",
+    icon: GraduationCap,
     outputs: "text",
     systemPrompt: `You are an expert educator. Teach concepts clearly with: a short intro, structured sections with headings, real-world examples, code snippets when relevant, a recap, and 2-3 quick-check questions. Use markdown formatting (headings, lists, code fences, tables). Adjust depth to the learner's apparent level. Be encouraging and concise.`,
   },
@@ -82,7 +84,7 @@ Use clean markdown (headings, lists, tables, code fences). Be concrete and quant
     label: "Normal Chat",
     command: "/chat",
     description: "Conversational assistant",
-    icon: "💬",
+    icon: MessageSquare,
     outputs: "text",
     systemPrompt: `You are a friendly, helpful, knowledgeable assistant. Answer in clear markdown. Be concise by default and expand when asked. Use lists, code fences, and tables where helpful.`,
   },
@@ -91,7 +93,7 @@ Use clean markdown (headings, lists, tables, code fences). Be concrete and quant
     label: "Content Creation",
     command: "/write",
     description: "Articles, posts, captions, emails, scripts",
-    icon: "✍️",
+    icon: PenLine,
     outputs: "text",
     systemPrompt: `You are a senior content writer. Produce polished content in the format the user requests (article, blog post, social caption, email, script, ad copy). Match tone and audience. Use strong hooks, clear structure, scannable formatting, and a clear call to action when appropriate. Return final copy in markdown.`,
   },

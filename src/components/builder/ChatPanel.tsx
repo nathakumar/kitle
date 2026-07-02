@@ -218,8 +218,8 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
               </div>
               <div className={`flex max-w-[85%] flex-col ${isUser ? "items-end" : "items-start"} gap-1`}>
                 {msgMode && (
-                  <span className="rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
-                    {msgMode.icon} {msgMode.label}
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
+                    <msgMode.icon className="h-2.5 w-2.5" /> {msgMode.label}
                   </span>
                 )}
                 <div
@@ -253,7 +253,7 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                 <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/60" style={{ animationDelay: "0ms" }} />
                 <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/60" style={{ animationDelay: "150ms" }} />
                 <span className="builder-dot h-1.5 w-1.5 rounded-full bg-foreground/60" style={{ animationDelay: "300ms" }} />
-                <span className="ml-2 text-[11px] text-muted-foreground">{activeMode.icon} {activeMode.label} — thinking…</span>
+                <span className="ml-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground"><activeMode.icon className="h-3 w-3" /> {activeMode.label} — thinking…</span>
               </div>
             </div>
           </div>
@@ -279,7 +279,7 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                   (i === slashIdx ? "bg-muted" : "hover:bg-muted/60")
                 }
               >
-                <span className="text-base leading-none">{m.icon}</span>
+                <m.icon className="h-4 w-4 text-foreground/80" />
                 <span className="flex-1">
                   <span className="block text-[13px] font-medium text-foreground">{m.label}</span>
                   <span className="block text-[11px] text-muted-foreground">{m.description}</span>
@@ -402,7 +402,7 @@ function ModePill({ mode, onChange }: { mode: ChatMode; onChange: (m: ChatMode) 
         onClick={() => setOpen((v) => !v)}
         className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[11px] font-medium text-foreground transition-colors hover:bg-background/70"
       >
-        <span>{m.icon}</span>
+        <m.icon className="h-3.5 w-3.5" />
         <span>{m.label}</span>
         <ChevronDown className="h-3 w-3 text-muted-foreground" />
       </button>
@@ -420,7 +420,7 @@ function ModePill({ mode, onChange }: { mode: ChatMode; onChange: (m: ChatMode) 
                   (opt.id === mode ? "bg-muted" : "")
                 }
               >
-                <span className="text-base">{opt.icon}</span>
+                <opt.icon className="h-4 w-4 text-foreground/80" />
                 <span className="flex-1">
                   <span className="block text-[13px] font-medium text-foreground">{opt.label}</span>
                   <span className="block text-[11px] text-muted-foreground">{opt.description}</span>
@@ -452,7 +452,7 @@ function EmptyState({ onPick }: { onPick: (id: ChatMode) => void }) {
             onClick={() => onPick(m.id)}
             className="group flex items-start gap-2 rounded-xl border border-border/60 bg-background/40 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-foreground/30 hover:bg-background/70"
           >
-            <span className="text-lg leading-none">{m.icon}</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border/60 bg-background/60 text-foreground/80"><m.icon className="h-4 w-4" /></span>
             <span className="flex-1">
               <span className="flex items-center justify-between gap-2">
                 <span className="text-[12px] font-semibold text-foreground">{m.label}</span>

@@ -187,14 +187,14 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               className="relative flex h-full w-full items-center justify-center"
               style={{ background: "var(--builder-surface)" }}
             >
-              <BentoLoader label={isSandbox ? (hasFiles ? "Updating your app" : "Generating your app") : `${modeDef.icon} Working on ${modeDef.label.toLowerCase()}…`} />
+              <BentoLoader label={isSandbox ? (hasFiles ? "Updating your app" : "Generating your app") : `Working on ${modeDef.label.toLowerCase()}…`} />
             </div>
           ) : !isSandbox ? (
             <div className="h-full w-full overflow-auto p-6 sm:p-10 builder-scroll">
               {hasText ? (
                 <article className="markdown-body mx-auto max-w-3xl text-[14px] leading-relaxed text-foreground/90">
                   <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/40 px-3 py-1 text-[11px] text-muted-foreground">
-                    <span>{modeDef.icon}</span>
+                    <modeDef.icon className="h-3.5 w-3.5" />
                     <span>{modeDef.label}</span>
                   </div>
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{assistantText}</ReactMarkdown>
@@ -202,7 +202,7 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               ) : (
                 <div className="flex h-full items-center justify-center text-center">
                   <div className="max-w-sm">
-                    <div className="mx-auto mb-4 text-4xl">{modeDef.icon}</div>
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-background/60 text-foreground/80"><modeDef.icon className="h-6 w-6" /></div>
                     <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
                     <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
                     <p className="mt-3 text-xs text-muted-foreground">
