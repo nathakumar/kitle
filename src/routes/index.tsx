@@ -475,7 +475,7 @@ function LandingPage() {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={onKey}
             rows={3}
-            placeholder={`${MODES[mode].icon}  ${MODES[mode].command} — ${MODES[mode].description}`}
+            placeholder={`${MODES[mode].command} — ${MODES[mode].description}`}
             className="w-full resize-none bg-transparent px-3 pt-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none sm:px-5 sm:pt-4 sm:text-base"
           />
           <div className="flex items-center justify-between gap-2 px-2 pb-1 sm:px-3 sm:pb-2">
