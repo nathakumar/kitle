@@ -420,7 +420,7 @@ function ModePill({ mode, onChange }: { mode: ChatMode; onChange: (m: ChatMode) 
                   (opt.id === mode ? "bg-muted" : "")
                 }
               >
-                <span className="text-base">{opt.icon}</span>
+                <opt.icon className="h-4 w-4 text-foreground/80" />
                 <span className="flex-1">
                   <span className="block text-[13px] font-medium text-foreground">{opt.label}</span>
                   <span className="block text-[11px] text-muted-foreground">{opt.description}</span>
