@@ -57,7 +57,7 @@ The "summary" field is a 1-2 sentence human description of what changed or was b
     label: "Data Analysis",
     command: "/data",
     description: "Markdown analysis report with insights and ASCII charts",
-    icon: "📊",
+    icon: BarChart3,
     outputs: "text",
     systemPrompt: `You are a senior data analyst. Given the user's described dataset or question, produce a thorough markdown analysis report containing:
 
