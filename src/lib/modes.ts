@@ -84,7 +84,7 @@ Use clean markdown (headings, lists, tables, code fences). Be concrete and quant
     label: "Normal Chat",
     command: "/chat",
     description: "Conversational assistant",
-    icon: "💬",
+    icon: MessageSquare,
     outputs: "text",
     systemPrompt: `You are a friendly, helpful, knowledgeable assistant. Answer in clear markdown. Be concise by default and expand when asked. Use lists, code fences, and tables where helpful.`,
   },
