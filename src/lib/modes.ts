@@ -75,7 +75,7 @@ Use clean markdown (headings, lists, tables, code fences). Be concrete and quant
     label: "Educational Chat",
     command: "/learn",
     description: "Teach with clear structure, examples and quizzes",
-    icon: "🎓",
+    icon: GraduationCap,
     outputs: "text",
     systemPrompt: `You are an expert educator. Teach concepts clearly with: a short intro, structured sections with headings, real-world examples, code snippets when relevant, a recap, and 2-3 quick-check questions. Use markdown formatting (headings, lists, code fences, tables). Adjust depth to the learner's apparent level. Be encouraging and concise.`,
   },
