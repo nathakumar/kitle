@@ -9,7 +9,7 @@ import { AuthDialog } from "@/components/AuthDialog";
 import { saveProject as saveProjectCloud, getProject } from "@/lib/projects";
 import { supabase } from "@/integrations/supabase/client";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
-import type { ChatMode } from "@/lib/modes";
+import { parseSlashCommand, type ChatMode } from "@/lib/modes";
 
 type BuilderSearch = { prompt?: string; saved?: string };
 type MobileView = "chat" | "preview";
@@ -123,7 +123,11 @@ function BuilderPage() {
         return;
       }
       initialFired.current = true;
-      handleSend(prompt);
+      const { mode: parsedMode, rest } = parseSlashCommand(prompt);
+      const finalMode: ChatMode = parsedMode ?? "website";
+      const finalText = parsedMode ? (rest.trim() || prompt) : prompt;
+      setDraftMode(finalMode);
+      handleSend(finalText, finalMode);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prompt, saved, user, authLoading]);
