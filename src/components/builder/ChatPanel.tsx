@@ -218,8 +218,8 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
               </div>
               <div className={`flex max-w-[85%] flex-col ${isUser ? "items-end" : "items-start"} gap-1`}>
                 {msgMode && (
-                  <span className="rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
-                    {msgMode.icon} {msgMode.label}
+                  <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-background/40 px-2 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
+                    <msgMode.icon className="h-2.5 w-2.5" /> {msgMode.label}
                   </span>
                 )}
                 <div
