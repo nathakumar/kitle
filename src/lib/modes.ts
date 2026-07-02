@@ -1,3 +1,5 @@
+import { Globe, BarChart3, GraduationCap, MessageSquare, PenLine, type LucideIcon } from "lucide-react";
+
 export type ChatMode =
   | "website"
   | "data-analysis"
@@ -10,7 +12,7 @@ export type ModeDef = {
   label: string;
   command: string;
   description: string;
-  icon: string; // emoji for quick UI
+  icon: LucideIcon;
   outputs: "files" | "text";
   systemPrompt: string;
 };
