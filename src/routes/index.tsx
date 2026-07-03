@@ -865,11 +865,14 @@ function NavItem({ label }: { label: string }) {
   );
 }
 
-function IconButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function IconButton({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+      className={cn(
+        "flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-card hover:text-foreground",
+        className,
+      )}
     >
       {children}
     </button>
