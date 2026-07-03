@@ -6,6 +6,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { AuthDialog } from "@/components/AuthDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { MODE_LIST, MODES, parseSlashCommand, type ChatMode } from "@/lib/modes";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
