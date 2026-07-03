@@ -6,6 +6,7 @@ import { UserMenu } from "@/components/UserMenu";
 import { AuthDialog } from "@/components/AuthDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { MODE_LIST, MODES, parseSlashCommand, type ChatMode } from "@/lib/modes";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -313,6 +314,8 @@ function LandingPage() {
   const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
   const [mode, setMode] = useState<ChatMode>("website");
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
 
   useEffect(() => {
     if (!savedOpen) return;
@@ -420,7 +423,7 @@ function LandingPage() {
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       {/* Top nav pill */}
-      <header className="px-3 pt-4 sm:px-4 sm:pt-6">
+      <header className="relative px-3 pt-4 sm:px-4 sm:pt-6">
         <nav className="mx-auto flex max-w-5xl items-center justify-between gap-2 rounded-full border border-border bg-card/60 px-3 py-2 backdrop-blur sm:px-6 sm:py-3">
           <Link to="/" className="text-base font-semibold tracking-tight sm:text-lg">
             nuvic
@@ -445,11 +448,56 @@ function LandingPage() {
               <GlobeIcon />
             </IconButton>
             <UserMenu size="sm" align="right" />
-            <IconButton aria-label="Menu">
+            <IconButton
+              className="sm:hidden"
+              aria-label="Menu"
+              aria-expanded={mobileNavOpen}
+              onClick={() => setMobileNavOpen((v) => !v)}
+            >
               <MenuIcon />
             </IconButton>
           </div>
         </nav>
+
+        {/* Mobile nav menu */}
+        {mobileNavOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setMobileNavOpen(false)}
+              aria-hidden="true"
+            />
+            <nav className="absolute left-3 right-3 top-full z-50 mt-2 rounded-2xl border border-border bg-card/95 p-2 shadow-2xl backdrop-blur-md sm:hidden">
+              <Link
+                to="/gallery"
+                onClick={() => setMobileNavOpen(false)}
+                className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <GlobeIcon />
+                Gallery
+              </Link>
+              <Link
+                to="/projects"
+                onClick={() => setMobileNavOpen(false)}
+                className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <FolderIcon />
+                My projects
+              </Link>
+              <Link
+                to="/analyze"
+                onClick={() => setMobileNavOpen(false)}
+                className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-foreground transition-colors hover:bg-muted"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                  <path d="M3 3v18h18" strokeLinecap="round" />
+                  <path d="M7 14l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Analyze data
+              </Link>
+            </nav>
+          </>
+        )}
       </header>
 
       {/* Hero */}
@@ -817,11 +865,14 @@ function NavItem({ label }: { label: string }) {
   );
 }
 
-function IconButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function IconButton({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-card hover:text-foreground"
+      className={cn(
+        "flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:bg-card hover:text-foreground",
+        className,
+      )}
     >
       {children}
     </button>
