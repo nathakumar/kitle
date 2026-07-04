@@ -99,13 +99,16 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
   };
 
   const handleOAuthConnect = () => {
+    const w = 620, h = 720;
+    const y = window.top?.outerHeight ? Math.max(0, ((window.top.outerHeight - h) / 2) + (window.top.screenY || 0)) : 100;
+    const x = window.top?.outerWidth ? Math.max(0, ((window.top.outerWidth - w) / 2) + (window.top.screenX || 0)) : 100;
     const popup = window.open(
       "/api/public/netlify/start",
       "netlify-oauth",
-      "width=620,height=720",
+      `width=${w},height=${h},left=${x},top=${y},resizable=yes,scrollbars=yes`,
     );
     if (!popup) {
-      toast.error("Popup blocked. Allow popups and try again.");
+      toast.error("Popup blocked. Allow popups for this site and try again.");
       return;
     }
     const onMessage = (event: MessageEvent) => {
@@ -114,13 +117,20 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
       window.removeEventListener("message", onMessage);
       if (data.ok && data.access_token) {
         setToken(data.access_token);
-        localStorage.setItem(TOKEN_KEY, data.access_token);
+        try { localStorage.setItem(TOKEN_KEY, data.access_token); } catch {}
         toast.success("Connected to Netlify");
       } else {
         toast.error(`Netlify sign-in failed: ${data.error ?? "unknown"}`);
       }
     };
     window.addEventListener("message", onMessage);
+    // Cleanup if popup closed without completing
+    const timer = window.setInterval(() => {
+      if (popup.closed) {
+        window.clearInterval(timer);
+        window.removeEventListener("message", onMessage);
+      }
+    }, 500);
   };
 
   const dialog = (
