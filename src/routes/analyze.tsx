@@ -477,7 +477,14 @@ function AnalyzePage() {
             <section className="rounded-2xl border border-border/60 bg-card/40 p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <h2 className="text-lg font-semibold">Executive summary</h2>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => downloadHTMLDashboard(result)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-primary to-primary/70 px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/30 transition hover:opacity-90"
+                  >
+                    ✨ HTML Dashboard
+                  </button>
                   <button
                     type="button"
                     onClick={() => downloadReport(result, "md")}
