@@ -204,14 +204,14 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
             onClick={() => setKeyOpen(true)}
             className={
               "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-medium uppercase tracking-wider transition-colors " +
-              (apiKey
+              (activeKey
                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
                 : "border-border/60 bg-background/40 text-muted-foreground hover:bg-background/70")
             }
-            title={apiKey ? "Gemini key connected" : "Connect your Gemini API key"}
+            title={activeKey ? `${activeProviderDef.short} key connected` : "Connect an AI provider API key"}
           >
             <KeyRound className="h-3 w-3" />
-            {apiKey ? "BYOK" : "Key"}
+            {activeKey ? activeProviderDef.short : "Key"}
           </button>
         </div>
       </div>
