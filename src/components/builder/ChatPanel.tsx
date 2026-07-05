@@ -129,15 +129,22 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
   };
 
   const saveKey = () => {
-    try {
-      localStorage.setItem(KEY_STORAGE, apiKey.trim());
-      localStorage.setItem(MODEL_STORAGE, model.trim() || "gemini-2.5-flash");
-    } catch {}
+    const next: ByokSettings = {
+      provider: draftProvider,
+      keys: { ...byok.keys, [draftProvider]: draftKey.trim() },
+      models: { ...byok.models, [draftProvider]: (draftModel.trim() || PROVIDERS[draftProvider].defaultModel) },
+    };
+    saveByok(next);
+    setByok(next);
     setKeyOpen(false);
   };
   const clearKey = () => {
-    setApiKey("");
-    try { localStorage.removeItem(KEY_STORAGE); } catch {}
+    const nextKeys = { ...byok.keys };
+    delete nextKeys[draftProvider];
+    const next: ByokSettings = { ...byok, keys: nextKeys };
+    saveByok(next);
+    setByok(next);
+    setDraftKey("");
   };
 
   const activeMode = MODES[mode];
