@@ -56,17 +56,21 @@ function BuilderPage() {
     setMessages(nextMessages);
     setIsLoading(true);
 
-    // BYOK: read Gemini key from localStorage (set via ChatPanel)
+    // BYOK: read provider + key + model from localStorage (managed via ChatPanel)
     let userApiKey: string | undefined;
     let userModel: string | undefined;
+    let userProvider: import("@/lib/providers").ProviderId | undefined;
     try {
-      userApiKey = localStorage.getItem("nuvic.gemini.apiKey") || undefined;
-      userModel = localStorage.getItem("nuvic.gemini.model") || undefined;
+      const { loadByok } = await import("@/lib/providers");
+      const s = loadByok();
+      userProvider = s.provider;
+      userApiKey = s.keys[s.provider] || undefined;
+      userModel = s.models[s.provider] || undefined;
     } catch {}
 
     try {
       const result = await generateProject({
-        data: { messages: nextMessages, currentFiles: files, mode, userApiKey, userModel },
+        data: { messages: nextMessages, currentFiles: files, mode, userApiKey, userModel, userProvider },
       });
       if (result.outputs === "files") {
         setFiles(result.files);

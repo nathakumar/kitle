@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { MODES, type ChatMode } from "./modes";
+import { PROVIDERS, type ProviderId } from "./providers";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type FileMap = Record<string, string>;
@@ -8,8 +9,9 @@ export type GenerateInput = {
   messages: ChatMsg[];
   currentFiles: FileMap;
   mode?: ChatMode;
-  userApiKey?: string; // user's own Gemini API key (BYOK)
-  userModel?: string; // optional Gemini model id (e.g. "gemini-2.5-flash")
+  userApiKey?: string; // BYOK API key for the selected provider
+  userModel?: string; // optional model id override
+  userProvider?: ProviderId; // BYOK provider — gemini | openai | anthropic | mistral | xai
 };
 
 export type GenerateResult = {
@@ -85,15 +87,21 @@ export const generateProject = createServerFn({ method: "POST" })
     let endpoint: string;
     let headers: Record<string, string>;
     let modelId: string;
+    let providerSupportsTools = true;
 
     if (usingByok) {
-      // Google Gemini's OpenAI-compatible endpoint
-      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      headers = {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      };
-      modelId = data.userModel?.trim() || "gemini-2.5-flash";
+      const providerId: ProviderId = (data.userProvider && PROVIDERS[data.userProvider] ? data.userProvider : "gemini");
+      const p = PROVIDERS[providerId];
+      endpoint = p.endpoint;
+      modelId = data.userModel?.trim() || p.defaultModel;
+      providerSupportsTools = p.supportsTools;
+      headers = { "Content-Type": "application/json", ...(p.extraHeaders || {}) };
+      if (p.authHeader === "x-api-key") {
+        headers["x-api-key"] = apiKey;
+        headers["Authorization"] = `Bearer ${apiKey}`;
+      } else {
+        headers["Authorization"] = `Bearer ${apiKey}`;
+      }
     } else {
       endpoint = "https://ai.gateway.lovable.dev/v1/chat/completions";
       headers = {
@@ -108,7 +116,7 @@ export const generateProject = createServerFn({ method: "POST" })
       messages,
       max_tokens: wantsFiles ? 16000 : 4000,
     };
-    if (wantsFiles) {
+    if (wantsFiles && providerSupportsTools) {
       body.tools = [EMIT_TOOL];
       body.tool_choice = { type: "function", function: { name: "emit_project" } };
     }
@@ -124,7 +132,7 @@ export const generateProject = createServerFn({ method: "POST" })
       if (resp.status === 429) throw new Error("Rate limited. Please wait and try again.");
       if (resp.status === 402) throw new Error("AI credits exhausted. Add credits in Workspace Settings.");
       if (resp.status === 401 || resp.status === 403) {
-        throw new Error(usingByok ? "Invalid Gemini API key." : "AI gateway authentication failed.");
+        throw new Error(usingByok ? `Invalid ${PROVIDERS[(data.userProvider as ProviderId) || "gemini"]?.label ?? "provider"} API key.` : "AI gateway authentication failed.");
       }
       console.error("AI error", resp.status, t);
       throw new Error(`AI error (${resp.status}): ${t.slice(0, 200)}`);

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUp, ChevronDown, Gift, Home, KeyRound, Slash, Sparkles, Star, User } from "lucide-react";
+import { ArrowUp, ChevronDown, Gift, Home, KeyRound, Slash, Sparkles, Star, User, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { UserMenu } from "@/components/UserMenu";
 import { MODES, MODE_LIST, parseSlashCommand, type ChatMode } from "@/lib/modes";
+import { PROVIDERS, PROVIDER_LIST, loadByok, saveByok, type ProviderId, type ByokSettings } from "@/lib/providers";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -20,9 +21,6 @@ interface Props {
   onModeChange?: (mode: ChatMode) => void;
 }
 
-const KEY_STORAGE = "nuvic.gemini.apiKey";
-const MODEL_STORAGE = "nuvic.gemini.model";
-
 export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) {
   const [input, setInput] = useState("");
   const [mode, _setMode] = useState<ChatMode>("website");
@@ -31,18 +29,34 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashIdx, setSlashIdx] = useState(0);
   const [keyOpen, setKeyOpen] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("gemini-2.5-flash");
+  const [byok, setByok] = useState<ByokSettings>({ provider: "gemini", keys: {}, models: {} });
+  const [draftProvider, setDraftProvider] = useState<ProviderId>("gemini");
+  const [draftKey, setDraftKey] = useState("");
+  const [draftModel, setDraftModel] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
-  // hydrate stored key
+  // hydrate stored BYOK settings
   useEffect(() => {
-    try {
-      setApiKey(localStorage.getItem(KEY_STORAGE) || "");
-      setModel(localStorage.getItem(MODEL_STORAGE) || "gemini-2.5-flash");
-    } catch {}
+    const s = loadByok();
+    setByok(s);
   }, []);
+
+  // when opening the dialog or switching provider inside it, sync drafts to stored values
+  useEffect(() => {
+    if (!keyOpen) return;
+    setDraftKey(byok.keys[draftProvider] || "");
+    setDraftModel(byok.models[draftProvider] || PROVIDERS[draftProvider].defaultModel);
+  }, [keyOpen, draftProvider, byok]);
+
+  // when opening, default the dialog to the currently active provider
+  useEffect(() => {
+    if (keyOpen) setDraftProvider(byok.provider);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyOpen]);
+
+  const activeKey = byok.keys[byok.provider];
+  const activeProviderDef = PROVIDERS[byok.provider];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -115,15 +129,22 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
   };
 
   const saveKey = () => {
-    try {
-      localStorage.setItem(KEY_STORAGE, apiKey.trim());
-      localStorage.setItem(MODEL_STORAGE, model.trim() || "gemini-2.5-flash");
-    } catch {}
+    const next: ByokSettings = {
+      provider: draftProvider,
+      keys: { ...byok.keys, [draftProvider]: draftKey.trim() },
+      models: { ...byok.models, [draftProvider]: (draftModel.trim() || PROVIDERS[draftProvider].defaultModel) },
+    };
+    saveByok(next);
+    setByok(next);
     setKeyOpen(false);
   };
   const clearKey = () => {
-    setApiKey("");
-    try { localStorage.removeItem(KEY_STORAGE); } catch {}
+    const nextKeys = { ...byok.keys };
+    delete nextKeys[draftProvider];
+    const next: ByokSettings = { ...byok, keys: nextKeys };
+    saveByok(next);
+    setByok(next);
+    setDraftKey("");
   };
 
   const activeMode = MODES[mode];
@@ -159,16 +180,16 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                 <div className="mt-1 flex items-center gap-2 px-2.5 py-2">
                   <span className="flex h-7 w-7 items-center justify-center rounded-md text-[12px] font-bold text-white" style={{ background: "var(--gradient-builder)" }}>N</span>
                   <span className="flex-1 text-sm font-medium">Your workspace</span>
-                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{apiKey ? "BYOK" : "Free"}</span>
+                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{activeKey ? "BYOK" : "Free"}</span>
                 </div>
                 <button
                   onClick={() => { setAccountOpen(false); setKeyOpen(true); }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
                 >
-                  <KeyRound className="h-3.5 w-3.5" /> {apiKey ? "Update Gemini API key" : "Connect Gemini API key"}
+                  <KeyRound className="h-3.5 w-3.5" /> {activeKey ? `Update ${activeProviderDef.short} key` : "Connect an AI provider"}
                 </button>
-                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted">
-                  <Gift className="h-3.5 w-3.5" /> Get a free Gemini key
+                <a href={activeProviderDef.keyUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted">
+                  <Gift className="h-3.5 w-3.5" /> Get a {activeProviderDef.short} key
                 </a>
                 <a href="https://lovable.dev/pricing" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted">
                   <Star className="h-3.5 w-3.5" /> Pricing & plans
@@ -183,14 +204,14 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
             onClick={() => setKeyOpen(true)}
             className={
               "inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-medium uppercase tracking-wider transition-colors " +
-              (apiKey
+              (activeKey
                 ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
                 : "border-border/60 bg-background/40 text-muted-foreground hover:bg-background/70")
             }
-            title={apiKey ? "Gemini key connected" : "Connect your Gemini API key"}
+            title={activeKey ? `${activeProviderDef.short} key connected` : "Connect an AI provider API key"}
           >
             <KeyRound className="h-3 w-3" />
-            {apiKey ? "BYOK" : "Key"}
+            {activeKey ? activeProviderDef.short : "Key"}
           </button>
         </div>
       </div>
@@ -337,39 +358,73 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
         </div>
       </form>
 
-      {/* Gemini API key dialog */}
+      {/* AI provider / API key dialog */}
       {keyOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-background/80 p-4 backdrop-blur" onClick={() => setKeyOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl text-white" style={{ background: "var(--gradient-builder)" }}>
                 <KeyRound className="h-4 w-4" />
               </span>
               <div>
-                <h2 className="text-base font-semibold leading-tight">Connect your Gemini API key</h2>
-                <p className="text-[11px] text-muted-foreground">Bring your own key — stored only in this browser.</p>
+                <h2 className="text-base font-semibold leading-tight">Connect an AI provider</h2>
+                <p className="text-[11px] text-muted-foreground">Bring your own key — stored only in this browser and sent per-request.</p>
               </div>
+            </div>
+
+            <label className="mt-4 mb-1.5 block text-[10px] uppercase tracking-wider text-muted-foreground">Provider</label>
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+              {PROVIDER_LIST.map((p) => {
+                const selected = draftProvider === p.id;
+                const hasKey = !!byok.keys[p.id];
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setDraftProvider(p.id)}
+                    className={
+                      "relative rounded-xl border px-2.5 py-2 text-left text-[12px] transition-all " +
+                      (selected
+                        ? "border-foreground bg-foreground/5"
+                        : "border-border/60 bg-background/40 hover:bg-background/70")
+                    }
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-foreground">{p.short}</span>
+                      {hasKey && <Check className="h-3 w-3 text-emerald-400" />}
+                    </div>
+                    <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">{p.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <label className="mt-4 mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">API key</label>
             <input
               type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="AIza..."
+              value={draftKey}
+              onChange={(e) => setDraftKey(e.target.value)}
+              placeholder={PROVIDERS[draftProvider].keyPlaceholder}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
             />
 
             <label className="mt-3 mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Model</label>
             <input
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="gemini-2.5-flash"
+              value={draftModel}
+              onChange={(e) => setDraftModel(e.target.value)}
+              placeholder={PROVIDERS[draftProvider].defaultModel}
+              list={`models-${draftProvider}`}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
             />
+            <datalist id={`models-${draftProvider}`}>
+              {PROVIDERS[draftProvider].models.map((m) => <option key={m} value={m} />)}
+            </datalist>
+
             <p className="mt-2 text-[11px] text-muted-foreground">
-              Get a free key at{" "}
-              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="underline">aistudio.google.com/apikey</a>.
+              {PROVIDERS[draftProvider].keyHint}{" "}
+              <a href={PROVIDERS[draftProvider].keyUrl} target="_blank" rel="noreferrer" className="underline">
+                Get a key
+              </a>.
             </p>
 
             <div className="mt-5 flex justify-between gap-2">
@@ -381,7 +436,7 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                   Cancel
                 </button>
                 <button onClick={saveKey} className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-all hover:scale-[1.02] active:scale-95">
-                  Save
+                  Save & use
                 </button>
               </div>
             </div>
