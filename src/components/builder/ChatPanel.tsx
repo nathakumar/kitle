@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUp, ChevronDown, Gift, Home, KeyRound, Slash, Sparkles, Star, User } from "lucide-react";
+import { ArrowUp, ChevronDown, Gift, Home, KeyRound, Slash, Sparkles, Star, User, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { UserMenu } from "@/components/UserMenu";
 import { MODES, MODE_LIST, parseSlashCommand, type ChatMode } from "@/lib/modes";
+import { PROVIDERS, PROVIDER_LIST, loadByok, saveByok, type ProviderId, type ByokSettings } from "@/lib/providers";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -20,9 +21,6 @@ interface Props {
   onModeChange?: (mode: ChatMode) => void;
 }
 
-const KEY_STORAGE = "nuvic.gemini.apiKey";
-const MODEL_STORAGE = "nuvic.gemini.model";
-
 export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) {
   const [input, setInput] = useState("");
   const [mode, _setMode] = useState<ChatMode>("website");
@@ -31,18 +29,34 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
   const [slashOpen, setSlashOpen] = useState(false);
   const [slashIdx, setSlashIdx] = useState(0);
   const [keyOpen, setKeyOpen] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [model, setModel] = useState("gemini-2.5-flash");
+  const [byok, setByok] = useState<ByokSettings>({ provider: "gemini", keys: {}, models: {} });
+  const [draftProvider, setDraftProvider] = useState<ProviderId>("gemini");
+  const [draftKey, setDraftKey] = useState("");
+  const [draftModel, setDraftModel] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
-  // hydrate stored key
+  // hydrate stored BYOK settings
   useEffect(() => {
-    try {
-      setApiKey(localStorage.getItem(KEY_STORAGE) || "");
-      setModel(localStorage.getItem(MODEL_STORAGE) || "gemini-2.5-flash");
-    } catch {}
+    const s = loadByok();
+    setByok(s);
   }, []);
+
+  // when opening the dialog or switching provider inside it, sync drafts to stored values
+  useEffect(() => {
+    if (!keyOpen) return;
+    setDraftKey(byok.keys[draftProvider] || "");
+    setDraftModel(byok.models[draftProvider] || PROVIDERS[draftProvider].defaultModel);
+  }, [keyOpen, draftProvider, byok]);
+
+  // when opening, default the dialog to the currently active provider
+  useEffect(() => {
+    if (keyOpen) setDraftProvider(byok.provider);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyOpen]);
+
+  const activeKey = byok.keys[byok.provider];
+  const activeProviderDef = PROVIDERS[byok.provider];
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
