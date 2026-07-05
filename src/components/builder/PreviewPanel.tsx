@@ -7,6 +7,8 @@ import {
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
 import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle, MessageSquare } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
@@ -188,27 +190,32 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               <BentoLoader label={isSandbox ? (hasFiles ? "Updating your app" : "Generating your app") : `Working on ${modeDef.label.toLowerCase()}…`} />
             </div>
           ) : !isSandbox ? (
-            <div className="h-full w-full overflow-auto p-6 sm:p-10 builder-scroll">
-              <div className="flex h-full items-center justify-center text-center">
-                <div className="max-w-sm">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-background/60 text-foreground/80"><modeDef.icon className="h-6 w-6" /></div>
-                  <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
-                  <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {hasText
-                      ? "Your conversation is shown in the chat on the left."
-                      : "Send a message on the left to start."}
-                  </p>
-                  {hasText && onBack && (
-                    <button
-                      onClick={onBack}
-                      className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/60 px-3 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:bg-background/80 md:hidden"
-                    >
-                      <ArrowLeft className="h-3 w-3" /> Open chat
-                    </button>
-                  )}
+            <div className="h-full w-full overflow-auto builder-scroll">
+              {hasText ? (
+                <div className="mx-auto max-w-3xl px-6 py-8 sm:px-10 sm:py-12">
+                  <div className="mb-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border/60 bg-background/60 text-foreground/80">
+                      <modeDef.icon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-semibold text-foreground">{modeDef.label}</h2>
+                      <p className="text-xs text-muted-foreground">{modeDef.description}</p>
+                    </div>
+                  </div>
+                  <article className="prose prose-invert prose-sm max-w-none prose-headings:font-semibold prose-headings:text-foreground prose-p:text-foreground/90 prose-li:text-foreground/90 prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none prose-pre:bg-background/60 prose-pre:border prose-pre:border-border/60 prose-a:text-primary prose-table:text-sm">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{assistantText}</ReactMarkdown>
+                  </article>
                 </div>
-              </div>
+              ) : (
+                <div className="flex h-full items-center justify-center p-6 sm:p-10 text-center">
+                  <div className="max-w-sm">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-background/60 text-foreground/80"><modeDef.icon className="h-6 w-6" /></div>
+                    <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
+                    <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
+                    <p className="mt-3 text-xs text-muted-foreground">Send a message on the left to start.</p>
+                  </div>
+                </div>
+              )}
             </div>
           ) : !hasFiles ? (
             <div className="relative flex h-full items-center justify-center p-8">
