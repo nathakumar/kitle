@@ -7,6 +7,8 @@ import {
   SandpackFileExplorer,
 } from "@codesandbox/sandpack-react";
 import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle, MessageSquare } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
