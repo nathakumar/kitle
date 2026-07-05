@@ -87,15 +87,21 @@ export const generateProject = createServerFn({ method: "POST" })
     let endpoint: string;
     let headers: Record<string, string>;
     let modelId: string;
+    let providerSupportsTools = true;
 
     if (usingByok) {
-      // Google Gemini's OpenAI-compatible endpoint
-      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      headers = {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      };
-      modelId = data.userModel?.trim() || "gemini-2.5-flash";
+      const providerId: ProviderId = (data.userProvider && PROVIDERS[data.userProvider] ? data.userProvider : "gemini");
+      const p = PROVIDERS[providerId];
+      endpoint = p.endpoint;
+      modelId = data.userModel?.trim() || p.defaultModel;
+      providerSupportsTools = p.supportsTools;
+      headers = { "Content-Type": "application/json", ...(p.extraHeaders || {}) };
+      if (p.authHeader === "x-api-key") {
+        headers["x-api-key"] = apiKey;
+        headers["Authorization"] = `Bearer ${apiKey}`;
+      } else {
+        headers["Authorization"] = `Bearer ${apiKey}`;
+      }
     } else {
       endpoint = "https://ai.gateway.lovable.dev/v1/chat/completions";
       headers = {
@@ -110,7 +116,7 @@ export const generateProject = createServerFn({ method: "POST" })
       messages,
       max_tokens: wantsFiles ? 16000 : 4000,
     };
-    if (wantsFiles) {
+    if (wantsFiles && providerSupportsTools) {
       body.tools = [EMIT_TOOL];
       body.tool_choice = { type: "function", function: { name: "emit_project" } };
     }
