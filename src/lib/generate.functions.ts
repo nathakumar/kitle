@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { MODES, type ChatMode } from "./modes";
+import { PROVIDERS, type ProviderId } from "./providers";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 type FileMap = Record<string, string>;
@@ -8,8 +9,9 @@ export type GenerateInput = {
   messages: ChatMsg[];
   currentFiles: FileMap;
   mode?: ChatMode;
-  userApiKey?: string; // user's own Gemini API key (BYOK)
-  userModel?: string; // optional Gemini model id (e.g. "gemini-2.5-flash")
+  userApiKey?: string; // BYOK API key for the selected provider
+  userModel?: string; // optional model id override
+  userProvider?: ProviderId; // BYOK provider — gemini | openai | anthropic | mistral | xai
 };
 
 export type GenerateResult = {
