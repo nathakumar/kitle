@@ -180,16 +180,16 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                 <div className="mt-1 flex items-center gap-2 px-2.5 py-2">
                   <span className="flex h-7 w-7 items-center justify-center rounded-md text-[12px] font-bold text-white" style={{ background: "var(--gradient-builder)" }}>N</span>
                   <span className="flex-1 text-sm font-medium">Your workspace</span>
-                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{apiKey ? "BYOK" : "Free"}</span>
+                  <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{activeKey ? "BYOK" : "Free"}</span>
                 </div>
                 <button
                   onClick={() => { setAccountOpen(false); setKeyOpen(true); }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
                 >
-                  <KeyRound className="h-3.5 w-3.5" /> {apiKey ? "Update Gemini API key" : "Connect Gemini API key"}
+                  <KeyRound className="h-3.5 w-3.5" /> {activeKey ? `Update ${activeProviderDef.short} key` : "Connect an AI provider"}
                 </button>
-                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted">
-                  <Gift className="h-3.5 w-3.5" /> Get a free Gemini key
+                <a href={activeProviderDef.keyUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted">
+                  <Gift className="h-3.5 w-3.5" /> Get a {activeProviderDef.short} key
                 </a>
                 <a href="https://lovable.dev/pricing" target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-muted">
                   <Star className="h-3.5 w-3.5" /> Pricing & plans
