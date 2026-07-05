@@ -358,39 +358,73 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
         </div>
       </form>
 
-      {/* Gemini API key dialog */}
+      {/* AI provider / API key dialog */}
       {keyOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center bg-background/80 p-4 backdrop-blur" onClick={() => setKeyOpen(false)}>
-          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
             <div className="flex items-center gap-2">
               <span className="flex h-9 w-9 items-center justify-center rounded-xl text-white" style={{ background: "var(--gradient-builder)" }}>
                 <KeyRound className="h-4 w-4" />
               </span>
               <div>
-                <h2 className="text-base font-semibold leading-tight">Connect your Gemini API key</h2>
-                <p className="text-[11px] text-muted-foreground">Bring your own key — stored only in this browser.</p>
+                <h2 className="text-base font-semibold leading-tight">Connect an AI provider</h2>
+                <p className="text-[11px] text-muted-foreground">Bring your own key — stored only in this browser and sent per-request.</p>
               </div>
+            </div>
+
+            <label className="mt-4 mb-1.5 block text-[10px] uppercase tracking-wider text-muted-foreground">Provider</label>
+            <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+              {PROVIDER_LIST.map((p) => {
+                const selected = draftProvider === p.id;
+                const hasKey = !!byok.keys[p.id];
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setDraftProvider(p.id)}
+                    className={
+                      "relative rounded-xl border px-2.5 py-2 text-left text-[12px] transition-all " +
+                      (selected
+                        ? "border-foreground bg-foreground/5"
+                        : "border-border/60 bg-background/40 hover:bg-background/70")
+                    }
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-foreground">{p.short}</span>
+                      {hasKey && <Check className="h-3 w-3 text-emerald-400" />}
+                    </div>
+                    <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">{p.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <label className="mt-4 mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">API key</label>
             <input
               type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="AIza..."
+              value={draftKey}
+              onChange={(e) => setDraftKey(e.target.value)}
+              placeholder={PROVIDERS[draftProvider].keyPlaceholder}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
             />
 
             <label className="mt-3 mb-1 block text-[10px] uppercase tracking-wider text-muted-foreground">Model</label>
             <input
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="gemini-2.5-flash"
+              value={draftModel}
+              onChange={(e) => setDraftModel(e.target.value)}
+              placeholder={PROVIDERS[draftProvider].defaultModel}
+              list={`models-${draftProvider}`}
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
             />
+            <datalist id={`models-${draftProvider}`}>
+              {PROVIDERS[draftProvider].models.map((m) => <option key={m} value={m} />)}
+            </datalist>
+
             <p className="mt-2 text-[11px] text-muted-foreground">
-              Get a free key at{" "}
-              <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="underline">aistudio.google.com/apikey</a>.
+              {PROVIDERS[draftProvider].keyHint}{" "}
+              <a href={PROVIDERS[draftProvider].keyUrl} target="_blank" rel="noreferrer" className="underline">
+                Get a key
+              </a>.
             </p>
 
             <div className="mt-5 flex justify-between gap-2">
@@ -402,7 +436,7 @@ export function ChatPanel({ messages, isLoading, onSend, onModeChange }: Props) 
                   Cancel
                 </button>
                 <button onClick={saveKey} className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background transition-all hover:scale-[1.02] active:scale-95">
-                  Save
+                  Save & use
                 </button>
               </div>
             </div>
