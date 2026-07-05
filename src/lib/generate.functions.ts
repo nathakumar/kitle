@@ -132,7 +132,7 @@ export const generateProject = createServerFn({ method: "POST" })
       if (resp.status === 429) throw new Error("Rate limited. Please wait and try again.");
       if (resp.status === 402) throw new Error("AI credits exhausted. Add credits in Workspace Settings.");
       if (resp.status === 401 || resp.status === 403) {
-        throw new Error(usingByok ? "Invalid Gemini API key." : "AI gateway authentication failed.");
+        throw new Error(usingByok ? `Invalid ${PROVIDERS[(data.userProvider as ProviderId) || "gemini"]?.label ?? "provider"} API key.` : "AI gateway authentication failed.");
       }
       console.error("AI error", resp.status, t);
       throw new Error(`AI error (${resp.status}): ${t.slice(0, 200)}`);
