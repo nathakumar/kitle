@@ -10,11 +10,15 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProjectsRouteImport } from './routes/projects'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as ApiPublicVercelDeployRouteImport } from './routes/api/public/vercel.deploy'
 import { Route as ApiPublicNetlifyStartRouteImport } from './routes/api/public/netlify.start'
 import { Route as ApiPublicNetlifyDeployRouteImport } from './routes/api/public/netlify.deploy'
@@ -23,6 +27,11 @@ import { Route as ApiPublicNetlifyCallbackRouteImport } from './routes/api/publi
 const ProjectsRoute = ProjectsRouteImport.update({
   id: '/projects',
   path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -50,6 +59,24 @@ const PIdRoute = PIdRouteImport.update({
   path: '/p/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicVercelDeployRoute = ApiPublicVercelDeployRouteImport.update({
   id: '/api/public/vercel/deploy',
   path: '/api/public/vercel/deploy',
@@ -77,8 +104,12 @@ export interface FileRoutesByFullPath {
   '/analyze': typeof AnalyzeRoute
   '/builder': typeof BuilderRoute
   '/gallery': typeof GalleryRoute
+  '/mcp': typeof McpRoute
   '/projects': typeof ProjectsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/p/$id': typeof PIdRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
@@ -89,8 +120,12 @@ export interface FileRoutesByTo {
   '/analyze': typeof AnalyzeRoute
   '/builder': typeof BuilderRoute
   '/gallery': typeof GalleryRoute
+  '/mcp': typeof McpRoute
   '/projects': typeof ProjectsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/p/$id': typeof PIdRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
@@ -102,8 +137,12 @@ export interface FileRoutesById {
   '/analyze': typeof AnalyzeRoute
   '/builder': typeof BuilderRoute
   '/gallery': typeof GalleryRoute
+  '/mcp': typeof McpRoute
   '/projects': typeof ProjectsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/p/$id': typeof PIdRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
   '/api/public/netlify/start': typeof ApiPublicNetlifyStartRoute
@@ -116,8 +155,12 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/builder'
     | '/gallery'
+    | '/mcp'
     | '/projects'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/p/$id'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
@@ -128,8 +171,12 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/builder'
     | '/gallery'
+    | '/mcp'
     | '/projects'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/p/$id'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
@@ -140,8 +187,12 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/builder'
     | '/gallery'
+    | '/mcp'
     | '/projects'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/p/$id'
+    | '/.mcp/invoke-tool/$tool'
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
     | '/api/public/netlify/start'
@@ -153,8 +204,12 @@ export interface RootRouteChildren {
   AnalyzeRoute: typeof AnalyzeRoute
   BuilderRoute: typeof BuilderRoute
   GalleryRoute: typeof GalleryRoute
+  McpRoute: typeof McpRoute
   ProjectsRoute: typeof ProjectsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   PIdRoute: typeof PIdRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicNetlifyCallbackRoute: typeof ApiPublicNetlifyCallbackRoute
   ApiPublicNetlifyDeployRoute: typeof ApiPublicNetlifyDeployRoute
   ApiPublicNetlifyStartRoute: typeof ApiPublicNetlifyStartRoute
@@ -168,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/projects'
       fullPath: '/projects'
       preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -203,6 +265,27 @@ declare module '@tanstack/react-router' {
       path: '/p/$id'
       fullPath: '/p/$id'
       preLoaderRoute: typeof PIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/vercel/deploy': {
@@ -241,8 +324,13 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyzeRoute: AnalyzeRoute,
   BuilderRoute: BuilderRoute,
   GalleryRoute: GalleryRoute,
+  McpRoute: McpRoute,
   ProjectsRoute: ProjectsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   PIdRoute: PIdRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicNetlifyCallbackRoute: ApiPublicNetlifyCallbackRoute,
   ApiPublicNetlifyDeployRoute: ApiPublicNetlifyDeployRoute,
   ApiPublicNetlifyStartRoute: ApiPublicNetlifyStartRoute,
