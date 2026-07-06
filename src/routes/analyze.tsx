@@ -61,6 +61,24 @@ function triggerDownload(filename: string, content: string, mime: string) {
   URL.revokeObjectURL(url);
 }
 
+function downloadCSV(result: AnalyzeResult) {
+  const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+  const esc = (v: unknown) => {
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const parts: string[] = [];
+  parts.push("# KPIs\nlabel,value,delta");
+  for (const k of result.kpis ?? []) parts.push([esc(k.label), esc(k.value), esc(k.delta ?? "")].join(","));
+  for (const c of result.charts ?? []) {
+    parts.push(`\n# Chart: ${c.title}`);
+    const headers = [c.xKey, ...c.yKeys];
+    parts.push(headers.map(esc).join(","));
+    for (const row of c.data) parts.push(headers.map((h) => esc(row[h])).join(","));
+  }
+  triggerDownload(`analysis-${stamp}.csv`, parts.join("\n"), "text/csv");
+}
+
 function downloadReport(result: AnalyzeResult, format: "md" | "json") {
   const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
   if (format === "json") {
@@ -494,10 +512,24 @@ function AnalyzePage() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => downloadCSV(result)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-xs font-medium text-foreground/90 transition hover:bg-background/70"
+                  >
+                    ⬇ CSV
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => downloadReport(result, "json")}
                     className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-xs font-medium text-foreground/90 transition hover:bg-background/70"
                   >
                     ⬇ JSON
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-3 py-1.5 text-xs font-medium text-foreground/90 transition hover:bg-background/70"
+                  >
+                    🖨 Print / PDF
                   </button>
                 </div>
               </div>
