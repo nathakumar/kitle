@@ -32,7 +32,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   twitch: Twitch, mail: Mail, phone: Phone, shop: ShoppingBag, music: Music2,
   video: Video, book: BookOpen, star: Star,
 };
-export function LinkIcon({ name, className }: { name: string; className?: string }) {
+export function LinkIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
   const C = ICON_MAP[name] ?? Link2;
   return <C className={className} />;
 }
