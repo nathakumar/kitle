@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      link_profiles: {
+        Row: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          display_name: string
+          id: string
+          theme: string
+          updated_at: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          avatar_url?: string
+          bio?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          avatar_url?: string
+          bio?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      links: {
+        Row: {
+          active: boolean
+          clicks: number
+          created_at: string
+          icon: string
+          id: string
+          position: number
+          title: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          clicks?: number
+          created_at?: string
+          icon?: string
+          id?: string
+          position?: number
+          title: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          clicks?: number
+          created_at?: string
+          icon?: string
+          id?: string
+          position?: number
+          title?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           created_at: string
