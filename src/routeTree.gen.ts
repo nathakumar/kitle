@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LinksRouteImport } from './routes/links'
 import { Route as GalleryRouteImport } from './routes/gallery'
 import { Route as BuilderRouteImport } from './routes/builder'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as PIdRouteImport } from './routes/p.$id'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -32,6 +34,11 @@ const ProjectsRoute = ProjectsRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinksRoute = LinksRouteImport.update({
+  id: '/links',
+  path: '/links',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GalleryRoute = GalleryRouteImport.update({
@@ -52,6 +59,11 @@ const AnalyzeRoute = AnalyzeRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PIdRoute = PIdRouteImport.update({
@@ -104,11 +116,13 @@ export interface FileRoutesByFullPath {
   '/analyze': typeof AnalyzeRoute
   '/builder': typeof BuilderRoute
   '/gallery': typeof GalleryRoute
+  '/links': typeof LinksRoute
   '/mcp': typeof McpRoute
   '/projects': typeof ProjectsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/p/$id': typeof PIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
@@ -120,11 +134,13 @@ export interface FileRoutesByTo {
   '/analyze': typeof AnalyzeRoute
   '/builder': typeof BuilderRoute
   '/gallery': typeof GalleryRoute
+  '/links': typeof LinksRoute
   '/mcp': typeof McpRoute
   '/projects': typeof ProjectsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/p/$id': typeof PIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
@@ -137,11 +153,13 @@ export interface FileRoutesById {
   '/analyze': typeof AnalyzeRoute
   '/builder': typeof BuilderRoute
   '/gallery': typeof GalleryRoute
+  '/links': typeof LinksRoute
   '/mcp': typeof McpRoute
   '/projects': typeof ProjectsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/p/$id': typeof PIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/api/public/netlify/callback': typeof ApiPublicNetlifyCallbackRoute
   '/api/public/netlify/deploy': typeof ApiPublicNetlifyDeployRoute
@@ -155,11 +173,13 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/builder'
     | '/gallery'
+    | '/links'
     | '/mcp'
     | '/projects'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/p/$id'
+    | '/u/$username'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
@@ -171,11 +191,13 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/builder'
     | '/gallery'
+    | '/links'
     | '/mcp'
     | '/projects'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/p/$id'
+    | '/u/$username'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
@@ -187,11 +209,13 @@ export interface FileRouteTypes {
     | '/analyze'
     | '/builder'
     | '/gallery'
+    | '/links'
     | '/mcp'
     | '/projects'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/p/$id'
+    | '/u/$username'
     | '/.mcp/invoke-tool/$tool'
     | '/api/public/netlify/callback'
     | '/api/public/netlify/deploy'
@@ -204,11 +228,13 @@ export interface RootRouteChildren {
   AnalyzeRoute: typeof AnalyzeRoute
   BuilderRoute: typeof BuilderRoute
   GalleryRoute: typeof GalleryRoute
+  LinksRoute: typeof LinksRoute
   McpRoute: typeof McpRoute
   ProjectsRoute: typeof ProjectsRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   PIdRoute: typeof PIdRoute
+  UUsernameRoute: typeof UUsernameRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicNetlifyCallbackRoute: typeof ApiPublicNetlifyCallbackRoute
   ApiPublicNetlifyDeployRoute: typeof ApiPublicNetlifyDeployRoute
@@ -230,6 +256,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/links': {
+      id: '/links'
+      path: '/links'
+      fullPath: '/links'
+      preLoaderRoute: typeof LinksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gallery': {
@@ -258,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/p/$id': {
@@ -324,12 +364,14 @@ const rootRouteChildren: RootRouteChildren = {
   AnalyzeRoute: AnalyzeRoute,
   BuilderRoute: BuilderRoute,
   GalleryRoute: GalleryRoute,
+  LinksRoute: LinksRoute,
   McpRoute: McpRoute,
   ProjectsRoute: ProjectsRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   PIdRoute: PIdRoute,
+  UUsernameRoute: UUsernameRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicNetlifyCallbackRoute: ApiPublicNetlifyCallbackRoute,
   ApiPublicNetlifyDeployRoute: ApiPublicNetlifyDeployRoute,
