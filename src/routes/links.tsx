@@ -26,7 +26,7 @@ export const Route = createFileRoute("/links")({
   component: LinksPage,
 });
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   link: Link2, globe: Globe, instagram: Instagram, twitter: Twitter, youtube: Youtube,
   tiktok: Music2, github: Github, linkedin: Linkedin, spotify: Music2, facebook: Facebook,
   twitch: Twitch, mail: Mail, phone: Phone, shop: ShoppingBag, music: Music2,
@@ -34,7 +34,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 export function LinkIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
   const C = ICON_MAP[name] ?? Link2;
-  return <C className={className} />;
+  return <C className={className} style={style} />;
 }
 
 function LinksPage() {
@@ -396,7 +396,7 @@ function LinksPage() {
         )}
       </main>
 
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
+      <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }
@@ -471,7 +471,7 @@ function PhonePreview({
                 className="flex items-center gap-3 rounded-xl border px-4 py-3 text-sm font-medium backdrop-blur-sm transition"
                 style={{ background: t.card, borderColor: "rgba(255,255,255,0.15)" }}
               >
-                <LinkIcon name={l.icon} className="h-4 w-4 shrink-0" style={{ color: t.accent } as never} />
+                <LinkIcon name={l.icon} className="h-4 w-4 shrink-0" style={{ color: t.accent }} />
                 <span className="truncate">{l.title || "Untitled"}</span>
               </div>
             ))

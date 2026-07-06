@@ -100,7 +100,7 @@ function PublicLinkPage() {
                 className="group flex items-center gap-3 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm backdrop-blur-sm transition hover:scale-[1.02] hover:shadow-lg"
                 style={{ background: t.card, borderColor: "rgba(255,255,255,0.18)" }}
               >
-                <LinkIcon name={l.icon} className="h-5 w-5 shrink-0" style={{ color: t.accent } as never} />
+                <LinkIcon name={l.icon} className="h-5 w-5 shrink-0" style={{ color: t.accent }} />
                 <span className="flex-1 truncate">{l.title}</span>
                 <ExternalLink className="h-4 w-4 shrink-0 opacity-40 transition group-hover:opacity-100" />
               </a>
