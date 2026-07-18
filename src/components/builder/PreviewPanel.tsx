@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import sdk, { type VM } from "@stackblitz/sdk";
 import {
-  SandpackProvider,
-  SandpackLayout,
-  SandpackPreview,
-  SandpackCodeEditor,
-  SandpackFileExplorer,
-} from "@codesandbox/sandpack-react";
-import { Code2, Eye, Sparkles, Download, Github, ArrowLeft, Settings, Rocket, Triangle, MessageSquare } from "lucide-react";
+  Code2,
+  Eye,
+  Sparkles,
+  Download,
+  Github,
+  ArrowLeft,
+  Settings,
+  Rocket,
+  Triangle,
+  MessageSquare,
+  FileCode,
+  FolderOpen,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import JSZip from "jszip";
@@ -18,7 +25,7 @@ import { MODES, type ChatMode } from "@/lib/modes";
 interface Props {
   files: Record<string, string>;
   isLoading?: boolean;
-  /** Current chat mode — only "website" uses Sandpack; others render a "normal preview". */
+  /** Current chat mode — only "website" uses WebContainer preview; others render a "normal preview". */
   mode?: ChatMode;
   /** Latest assistant text — used for non-sandbox preview modes. */
   assistantText?: string;
@@ -32,6 +39,31 @@ interface Props {
 
 type Tab = "preview" | "code";
 
+/** Strip leading slash so StackBlitz SDK receives paths like "App.tsx" not "/App.tsx" */
+function normalizeFiles(files: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [path, content] of Object.entries(files)) {
+    out[path.startsWith("/") ? path.slice(1) : path] = content;
+  }
+  return out;
+}
+
+/** Derive a simple file-extension language label for display. */
+function langLabel(filename: string): string {
+  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+  const map: Record<string, string> = {
+    tsx: "tsx",
+    ts: "ts",
+    jsx: "jsx",
+    js: "js",
+    css: "css",
+    html: "html",
+    json: "json",
+    md: "md",
+  };
+  return map[ext] ?? "text";
+}
+
 async function downloadAsZip(files: Record<string, string>) {
   const zip = new JSZip();
   Object.entries(files).forEach(([path, content]) => {
@@ -42,23 +74,107 @@ async function downloadAsZip(files: Record<string, string>) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `lovable-project-${Date.now()}.zip`;
+  a.download = `project-${Date.now()}.zip`;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
 }
 
-export function PreviewPanel({ files, isLoading = false, mode = "website", assistantText = "", onBack, githubUrl, onSettings }: Props) {
+export function PreviewPanel({
+  files,
+  isLoading = false,
+  mode = "website",
+  assistantText = "",
+  onBack,
+  githubUrl,
+  onSettings,
+}: Props) {
   const [tab, setTab] = useState<Tab>("preview");
   const [netlifyOpen, setNetlifyOpen] = useState(false);
   const [vercelOpen, setVercelOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  // StackBlitz WebContainer refs
+  const sbContainerRef = useRef<HTMLDivElement>(null);
+  const vmRef = useRef<VM | null>(null);
+  const mountedFilesRef = useRef<Record<string, string>>({});
 
   const isSandbox = mode === "website";
   const modeDef = MODES[mode];
   const hasFiles = Object.keys(files).length > 0;
   const hasText = assistantText.trim().length > 0;
   const showLoader = isLoading && tab === "preview";
+
+  const normalizedFiles = normalizeFiles(files);
+  const fileList = Object.keys(normalizedFiles).sort();
+
+  // Auto-select first file when file list changes
+  useEffect(() => {
+    if (fileList.length > 0 && (!selectedFile || !fileList.includes(selectedFile))) {
+      setSelectedFile(fileList[0]);
+    }
+  }, [fileList.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Mount or hot-update StackBlitz WebContainer when files change
+  useEffect(() => {
+    if (!isSandbox || !hasFiles) return;
+
+    const container = sbContainerRef.current;
+    if (!container) return;
+
+    if (!vmRef.current) {
+      // First mount — embed a new project
+      sdk
+        .embedProject(
+          container,
+          {
+            title: "Generated Project",
+            template: "react-ts",
+            files: normalizedFiles,
+          },
+          {
+            view: "preview",
+            hideNavigation: true,
+            hideDevTools: false,
+            forceEmbedLayout: true,
+            height: "100%",
+          },
+        )
+        .then((vm) => {
+          vmRef.current = vm;
+          mountedFilesRef.current = { ...normalizedFiles };
+        });
+    } else {
+      // Subsequent updates — diff and patch via applyFsDiff (no iframe reload)
+      const create: Record<string, string> = {};
+      const destroy: string[] = [];
+
+      for (const [path, content] of Object.entries(normalizedFiles)) {
+        if (mountedFilesRef.current[path] !== content) {
+          create[path] = content;
+        }
+      }
+      for (const path of Object.keys(mountedFilesRef.current)) {
+        if (!(path in normalizedFiles)) {
+          destroy.push(path);
+        }
+      }
+
+      if (Object.keys(create).length > 0 || destroy.length > 0) {
+        vmRef.current.applyFsDiff({ create, destroy }).catch(console.error);
+        mountedFilesRef.current = { ...normalizedFiles };
+      }
+    }
+  }, [files, isSandbox, hasFiles]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Tear down VM when leaving website mode
+  useEffect(() => {
+    if (!isSandbox) {
+      vmRef.current = null;
+      mountedFilesRef.current = {};
+    }
+  }, [isSandbox]);
 
   const handleDownload = () => {
     if (!hasFiles) return;
@@ -70,11 +186,8 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
   };
 
   return (
-    <div
-      className="flex h-full flex-col"
-      style={{ background: "var(--builder-surface-2)" }}
-    >
-      {/* Toolbar — redesigned to match reference: back, pill toggle, actions */}
+    <div className="flex h-full flex-col" style={{ background: "var(--builder-surface-2)" }}>
+      {/* Toolbar */}
       <div className="flex shrink-0 items-center gap-2 border-b border-border/60 px-2 py-2 sm:px-3">
         {/* Back (mobile only) */}
         {onBack && (
@@ -94,7 +207,7 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
         </div>
 
-        {/* Centered pill toggle — Code tab only shown for the sandboxed website mode */}
+        {/* Centered pill toggle */}
         <div className="mx-auto inline-flex rounded-full border border-border/60 bg-background/40 p-0.5 md:mx-0">
           <button
             onClick={() => setTab("preview")}
@@ -106,7 +219,11 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
             }
           >
             {tab === "preview" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-            {isSandbox ? <Eye className="h-3 w-3 md:hidden" /> : <MessageSquare className="h-3 w-3 md:hidden" />}
+            {isSandbox ? (
+              <Eye className="h-3 w-3 md:hidden" />
+            ) : (
+              <MessageSquare className="h-3 w-3 md:hidden" />
+            )}
             {isSandbox ? "Preview" : modeDef.label}
           </button>
           {isSandbox && (
@@ -183,13 +300,23 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
           style={{ boxShadow: "var(--shadow-soft)", background: "var(--builder-surface)" }}
         >
           {showLoader ? (
+            /* Loading overlay */
             <div
               className="relative flex h-full w-full items-center justify-center"
               style={{ background: "var(--builder-surface)" }}
             >
-              <BentoLoader label={isSandbox ? (hasFiles ? "Updating your app" : "Generating your app") : `Working on ${modeDef.label.toLowerCase()}…`} />
+              <BentoLoader
+                label={
+                  isSandbox
+                    ? hasFiles
+                      ? "Updating your app"
+                      : "Generating your app"
+                    : `Working on ${modeDef.label.toLowerCase()}…`
+                }
+              />
             </div>
           ) : !isSandbox ? (
+            /* Non-sandbox text modes */
             <div className="h-full w-full overflow-auto builder-scroll">
               {hasText ? (
                 <div className="mx-auto max-w-3xl px-6 py-8 sm:px-10 sm:py-12">
@@ -209,15 +336,20 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               ) : (
                 <div className="flex h-full items-center justify-center p-6 sm:p-10 text-center">
                   <div className="max-w-sm">
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-background/60 text-foreground/80"><modeDef.icon className="h-6 w-6" /></div>
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-background/60 text-foreground/80">
+                      <modeDef.icon className="h-6 w-6" />
+                    </div>
                     <h2 className="text-base font-semibold text-foreground">{modeDef.label}</h2>
                     <p className="mt-1.5 text-xs text-muted-foreground">{modeDef.description}</p>
-                    <p className="mt-3 text-xs text-muted-foreground">Send a message on the left to start.</p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      Send a message on the left to start.
+                    </p>
                   </div>
                 </div>
               )}
             </div>
           ) : !hasFiles ? (
+            /* Empty state — no files yet */
             <div className="relative flex h-full items-center justify-center p-8">
               <div
                 className="pointer-events-none absolute inset-0"
@@ -226,7 +358,10 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               <div className="relative max-w-sm text-center">
                 <div
                   className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg"
-                  style={{ background: "var(--gradient-builder)", boxShadow: "var(--shadow-glow)" }}
+                  style={{
+                    background: "var(--gradient-builder)",
+                    boxShadow: "var(--shadow-glow)",
+                  }}
                 >
                   <Sparkles className="h-6 w-6" strokeWidth={2} />
                 </div>
@@ -239,108 +374,119 @@ export function PreviewPanel({ files, isLoading = false, mode = "website", assis
               </div>
             </div>
           ) : (
-            <SandpackProvider
-              key={Object.keys(files).sort().join("|")}
-              template="react-ts"
-              files={files}
-              theme="dark"
-              options={{
-                recompileMode: "delayed",
-                recompileDelay: 300,
-              }}
-              customSetup={{
-                dependencies: {
-                  react: "^18.2.0",
-                  "react-dom": "^18.2.0",
-                },
-              }}
-              style={{ height: "100%" }}
-            >
-              <SandpackLayout
+            /* StackBlitz WebContainer preview + file-tree code viewer */
+            <div className="flex h-full w-full flex-col">
+              {/* StackBlitz iframe — always in DOM so the WebContainer keeps running */}
+              <div
+                ref={sbContainerRef}
                 style={{
-                  height: "100%",
-                  width: "100%",
-                  border: "none",
-                  borderRadius: 0,
-                  display: "flex",
-                  background: "transparent",
+                  flex: 1,
+                  minHeight: 0,
+                  display: tab === "preview" ? "flex" : "none",
+                  flexDirection: "column",
                 }}
-              >
-                {/* Preview pane — kept mounted */}
-                <div
-                  style={{
-                    display: tab === "preview" ? "flex" : "none",
-                    height: "100%",
-                    width: "100%",
-                    minWidth: 0,
-                    overflow: "auto",
-                  }}
-                >
-                  <SandpackPreview
-                    style={{ height: "100%", flex: 1, minWidth: 0 }}
-                    showOpenInCodeSandbox={false}
-                    showRefreshButton
-                  />
-                </div>
+              />
 
-                {/* Code pane — responsive: file explorer collapses on mobile, editor scrolls horizontally */}
-                <div
-                  style={{
-                    display: tab === "code" ? "flex" : "none",
-                    height: "100%",
-                    width: "100%",
-                    minWidth: 0,
-                  }}
-                  className="flex-col sm:!flex-row"
-                >
-                  <div className="hidden h-full sm:block" style={{ flexShrink: 0 }}>
-                    <SandpackFileExplorer
-                      style={{
-                        height: "100%",
-                        width: 220,
-                        minWidth: 180,
-                        borderRight: "1px solid var(--builder-elevated)",
-                        overflowY: "auto",
-                      }}
-                      autoHiddenFiles
-                    />
-                  </div>
-                  {/* Mobile-only condensed file explorer (top strip) */}
+              {/* Code tab — custom file tree + viewer */}
+              {tab === "code" && (
+                <div className="flex h-full w-full min-h-0 overflow-hidden">
+                  {/* File tree sidebar */}
                   <div
-                    className="block sm:hidden"
+                    className="hidden sm:flex flex-col overflow-y-auto builder-scroll shrink-0"
                     style={{
-                      flexShrink: 0,
-                      height: 140,
+                      width: 220,
+                      borderRight: "1px solid var(--builder-elevated)",
+                      background: "var(--builder-surface-2)",
+                    }}
+                  >
+                    <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      <FolderOpen className="h-3 w-3" />
+                      Files
+                    </div>
+                    {fileList.map((path) => (
+                      <button
+                        key={path}
+                        onClick={() => setSelectedFile(path)}
+                        className={
+                          "flex w-full items-center gap-2 truncate px-3 py-1.5 text-left text-[11px] transition-colors " +
+                          (selectedFile === path
+                            ? "bg-primary/15 text-foreground"
+                            : "text-muted-foreground hover:bg-background/40 hover:text-foreground")
+                        }
+                      >
+                        <FileCode className="h-3 w-3 shrink-0 opacity-60" />
+                        <span className="truncate">{path}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Mobile file picker — horizontal scroll strip */}
+                  <div
+                    className="flex sm:hidden shrink-0 overflow-x-auto builder-scroll gap-1 px-2 py-1.5"
+                    style={{
                       borderBottom: "1px solid var(--builder-elevated)",
-                      overflow: "auto",
+                      background: "var(--builder-surface-2)",
                     }}
                   >
-                    <SandpackFileExplorer
-                      style={{ height: "100%", width: "100%" }}
-                      autoHiddenFiles
-                    />
+                    {fileList.map((path) => (
+                      <button
+                        key={path}
+                        onClick={() => setSelectedFile(path)}
+                        className={
+                          "shrink-0 rounded-md px-2.5 py-1 text-[10px] whitespace-nowrap transition-colors " +
+                          (selectedFile === path
+                            ? "bg-primary/20 text-foreground"
+                            : "text-muted-foreground hover:text-foreground")
+                        }
+                      >
+                        {path.split("/").pop()}
+                      </button>
+                    ))}
                   </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                      minHeight: 0,
-                      overflow: "auto",
-                    }}
-                    className="builder-scroll"
-                  >
-                    <SandpackCodeEditor
-                      style={{ height: "100%", minWidth: 0 }}
-                      showTabs
-                      showLineNumbers
-                      showInlineErrors
-                      wrapContent={false}
-                      closableTabs
-                    />
+
+                  {/* Code content */}
+                  <div className="flex flex-1 min-w-0 min-h-0 flex-col overflow-hidden">
+                    {selectedFile && normalizedFiles[selectedFile] !== undefined ? (
+                      <>
+                        {/* File header bar */}
+                        <div
+                          className="flex shrink-0 items-center gap-2 border-b border-border/40 px-4 py-1.5"
+                          style={{ background: "var(--builder-surface)" }}
+                        >
+                          <FileCode className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-[11px] font-medium text-foreground">
+                            {selectedFile}
+                          </span>
+                          <span className="ml-auto rounded bg-background/60 px-1.5 py-0.5 text-[9px] uppercase tracking-wider text-muted-foreground">
+                            {langLabel(selectedFile)}
+                          </span>
+                        </div>
+                        {/* Code block */}
+                        <div className="flex-1 min-h-0 overflow-auto builder-scroll">
+                          <pre
+                            className="min-h-full p-4 text-[11px] leading-relaxed text-foreground/90"
+                            style={{
+                              fontFamily:
+                                '"Fira Code", "Cascadia Code", "JetBrains Mono", ui-monospace, monospace',
+                              tabSize: 2,
+                              background: "var(--builder-surface)",
+                              margin: 0,
+                              whiteSpace: "pre",
+                            }}
+                          >
+                            {normalizedFiles[selectedFile]}
+                          </pre>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
+                        Select a file to view its source
+                      </div>
+                    )}
                   </div>
                 </div>
-              </SandpackLayout>
-            </SandpackProvider>
+              )}
+            </div>
           )}
         </div>
       </div>
