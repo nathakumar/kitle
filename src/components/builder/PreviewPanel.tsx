@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import sdk, { type VM } from "@stackblitz/sdk";
 import {
   Code2,
   Eye,
@@ -21,6 +20,7 @@ import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 import { VercelDeployDialog } from "./VercelDeployDialog";
 import { MODES, type ChatMode } from "@/lib/modes";
+import { getWebContainer, ensureDirAndWriteFile, buildFileSystemTree } from "@/lib/webcontainer";
 
 interface Props {
   files: Record<string, string>;
@@ -39,7 +39,7 @@ interface Props {
 
 type Tab = "preview" | "code";
 
-/** Strip leading slash so StackBlitz SDK receives paths like "App.tsx" not "/App.tsx" */
+/** Strip leading slash so paths are normalized */
 function normalizeFiles(files: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [path, content] of Object.entries(files)) {
@@ -95,16 +95,23 @@ export function PreviewPanel({
   const [vercelOpen, setVercelOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
-  // StackBlitz WebContainer refs
-  const sbContainerRef = useRef<HTMLDivElement>(null);
-  const vmRef = useRef<VM | null>(null);
+  // WebContainer preview state
+  const [wcState, setWcState] = useState<
+    "idle" | "booting" | "mounting" | "installing" | "starting" | "ready" | "error"
+  >("idle");
+  const [wcError, setWcError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  const isWcInitializedRef = useRef(false);
   const mountedFilesRef = useRef<Record<string, string>>({});
 
   const isSandbox = mode === "website";
   const modeDef = MODES[mode];
   const hasFiles = Object.keys(files).length > 0;
   const hasText = assistantText.trim().length > 0;
-  const showLoader = isLoading && tab === "preview";
+
+  const isWcLoading = isSandbox && hasFiles && wcState !== "ready" && wcState !== "error";
+  const showLoader = (isLoading || isWcLoading) && tab === "preview";
 
   const normalizedFiles = normalizeFiles(files);
   const fileList = Object.keys(normalizedFiles).sort();
@@ -116,65 +123,188 @@ export function PreviewPanel({
     }
   }, [fileList.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mount or hot-update StackBlitz WebContainer when files change
+  // Boot or hot-update WebContainer when files change
   useEffect(() => {
     if (!isSandbox || !hasFiles) return;
 
-    const container = sbContainerRef.current;
-    if (!container) return;
+    let active = true;
 
-    if (!vmRef.current) {
-      // First mount — embed a new project
-      sdk
-        .embedProject(
-          container,
-          {
-            title: "Generated Project",
-            template: "react-ts",
-            files: normalizedFiles,
-          },
-          {
-            view: "preview",
-            hideNavigation: true,
-            hideDevTools: false,
-            forceEmbedLayout: true,
-            height: "100%",
-          },
-        )
-        .then((vm) => {
-          vmRef.current = vm;
+    async function initWebContainer() {
+      if (isWcInitializedRef.current) {
+        // Warm update: diff and patch via direct file system writes
+        try {
+          const wc = await getWebContainer();
+          const lastFiles = mountedFilesRef.current;
+
+          // Check if package.json has changed
+          const prevPkg = lastFiles["package.json"];
+          const nextPkg = normalizedFiles["package.json"];
+          const packageJsonChanged =
+            prevPkg !== undefined && nextPkg !== undefined && prevPkg !== nextPkg;
+
+          // Write new/changed files
+          for (const [path, content] of Object.entries(normalizedFiles)) {
+            if (lastFiles[path] !== content) {
+              await ensureDirAndWriteFile(wc, path, content);
+            }
+          }
+
+          // Delete removed files
+          for (const path of Object.keys(lastFiles)) {
+            if (!(path in normalizedFiles)) {
+              try {
+                await wc.fs.rm(path);
+              } catch (e) {
+                // Ignore if already deleted
+              }
+            }
+          }
+
           mountedFilesRef.current = { ...normalizedFiles };
+
+          // Re-install if package.json changed
+          if (packageJsonChanged && active) {
+            setWcState("installing");
+            const installProcess = await wc.spawn("npm", ["install"]);
+            const exitCode = await installProcess.exit;
+            if (exitCode === 0 && active) {
+              setWcState("ready");
+            }
+          }
+        } catch (err) {
+          console.error("Incremental update failed", err);
+        }
+        return;
+      }
+
+      // First mount — boot, mount, npm install, and start dev server
+      isWcInitializedRef.current = true;
+      setWcState("booting");
+
+      try {
+        const wc = await getWebContainer();
+        if (!active) return;
+
+        setWcState("mounting");
+
+        // Inject standard default configurations if missing
+        const combined: Record<string, string> = { ...normalizedFiles };
+        if (!combined["package.json"]) {
+          combined["package.json"] = JSON.stringify(
+            {
+              name: "vite-react-app",
+              private: true,
+              version: "0.0.0",
+              type: "module",
+              scripts: {
+                dev: "vite --host",
+                build: "tsc && vite build",
+                preview: "vite preview",
+              },
+              dependencies: {
+                react: "^18.3.1",
+                "react-dom": "^18.3.1",
+                "lucide-react": "^0.395.0",
+              },
+              devDependencies: {
+                "@types/react": "^18.3.3",
+                "@types/react-dom": "^18.3.0",
+                "@vitejs/plugin-react": "^4.3.1",
+                typescript: "^5.2.2",
+                vite: "^5.3.1",
+              },
+            },
+            null,
+            2,
+          );
+        }
+        if (!combined["vite.config.ts"]) {
+          combined["vite.config.ts"] = `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});`;
+        }
+        if (!combined["tsconfig.json"]) {
+          combined["tsconfig.json"] = JSON.stringify(
+            {
+              compilerOptions: {
+                target: "ES2020",
+                useDefineForClassFields: true,
+                lib: ["DOM", "DOM.Iterable", "ES2020"],
+                module: "ESNext",
+                skipLibCheck: true,
+                moduleResolution: "bundler",
+                allowImportingTsExtensions: true,
+                resolveJsonModule: true,
+                isolatedModules: true,
+                noEmit: true,
+                jsx: "react-jsx",
+                strict: true,
+                noUnusedLocals: false,
+                noUnusedParameters: false,
+                noFallthroughCasesInSwitch: true,
+              },
+              include: ["."],
+            },
+            null,
+            2,
+          );
+        }
+
+        const tree = buildFileSystemTree(combined);
+        await wc.mount(tree);
+        if (!active) return;
+
+        setWcState("installing");
+        const installProcess = await wc.spawn("npm", ["install"]);
+        installProcess.output.pipeTo(
+          new WritableStream({
+            write(data) {
+              console.log("[wc install]", data);
+            },
+          }),
+        );
+        const exitCode = await installProcess.exit;
+        if (exitCode !== 0) {
+          throw new Error(`npm install failed with exit code ${exitCode}`);
+        }
+        if (!active) return;
+
+        setWcState("starting");
+        const devProcess = await wc.spawn("npm", ["run", "dev"]);
+        devProcess.output.pipeTo(
+          new WritableStream({
+            write(data) {
+              console.log("[wc dev]", data);
+            },
+          }),
+        );
+
+        wc.on("server-ready", (port, url) => {
+          if (!active) return;
+          setPreviewUrl(url);
+          setWcState("ready");
         });
-    } else {
-      // Subsequent updates — diff and patch via applyFsDiff (no iframe reload)
-      const create: Record<string, string> = {};
-      const destroy: string[] = [];
 
-      for (const [path, content] of Object.entries(normalizedFiles)) {
-        if (mountedFilesRef.current[path] !== content) {
-          create[path] = content;
-        }
-      }
-      for (const path of Object.keys(mountedFilesRef.current)) {
-        if (!(path in normalizedFiles)) {
-          destroy.push(path);
-        }
-      }
-
-      if (Object.keys(create).length > 0 || destroy.length > 0) {
-        vmRef.current.applyFsDiff({ create, destroy }).catch(console.error);
         mountedFilesRef.current = { ...normalizedFiles };
+      } catch (err) {
+        console.error("WebContainer setup failed:", err);
+        if (active) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          setWcError(errMsg);
+          setWcState("error");
+        }
       }
     }
-  }, [files, isSandbox, hasFiles]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tear down VM when leaving website mode
-  useEffect(() => {
-    if (!isSandbox) {
-      vmRef.current = null;
-      mountedFilesRef.current = {};
-    }
-  }, [isSandbox]);
+    void initWebContainer();
+
+    return () => {
+      active = false;
+    };
+  }, [files, isSandbox, hasFiles]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDownload = () => {
     if (!hasFiles) return;
@@ -183,6 +313,18 @@ export function PreviewPanel({
 
   const handleGithub = () => {
     window.open(githubUrl ?? "https://github.com", "_blank", "noopener,noreferrer");
+  };
+
+  const getLoaderLabel = () => {
+    if (!isSandbox) {
+      return `Working on ${modeDef.label.toLowerCase()}…`;
+    }
+    if (wcState === "booting") return "Booting in-browser development server...";
+    if (wcState === "mounting") return "Preparing project files...";
+    if (wcState === "installing")
+      return "Installing project dependencies (this may take a few seconds)...";
+    if (wcState === "starting") return "Starting Vite development server...";
+    return hasFiles ? "Updating your app..." : "Generating your app...";
   };
 
   return (
@@ -305,15 +447,26 @@ export function PreviewPanel({
               className="relative flex h-full w-full items-center justify-center"
               style={{ background: "var(--builder-surface)" }}
             >
-              <BentoLoader
-                label={
-                  isSandbox
-                    ? hasFiles
-                      ? "Updating your app"
-                      : "Generating your app"
-                    : `Working on ${modeDef.label.toLowerCase()}…`
-                }
-              />
+              <BentoLoader label={getLoaderLabel()} />
+            </div>
+          ) : wcState === "error" ? (
+            /* Error display */
+            <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+              <div className="max-w-sm">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive">
+                  <Triangle className="h-6 w-6" />
+                </div>
+                <h2 className="text-base font-semibold text-foreground">WebContainer Error</h2>
+                <p className="mt-1.5 text-xs text-muted-foreground text-center">
+                  Failed to start the preview environment. Your browser may not support
+                  WebContainers, or third-party cookies / cross-origin isolation is restricted.
+                </p>
+                {wcError && (
+                  <pre className="mt-3 max-h-32 overflow-auto rounded bg-background/50 p-2 text-left font-mono text-[10px] text-destructive-foreground">
+                    {wcError}
+                  </pre>
+                )}
+              </div>
             </div>
           ) : !isSandbox ? (
             /* Non-sandbox text modes */
@@ -374,18 +527,29 @@ export function PreviewPanel({
               </div>
             </div>
           ) : (
-            /* StackBlitz WebContainer preview + file-tree code viewer */
+            /* WebContainer preview + file-tree code viewer */
             <div className="flex h-full w-full flex-col">
-              {/* StackBlitz iframe — always in DOM so the WebContainer keeps running */}
+              {/* WebContainer iframe — always in DOM so the WebContainer keeps running */}
               <div
-                ref={sbContainerRef}
                 style={{
                   flex: 1,
                   minHeight: 0,
                   display: tab === "preview" ? "flex" : "none",
                   flexDirection: "column",
                 }}
-              />
+              >
+                {previewUrl ? (
+                  <iframe
+                    src={previewUrl}
+                    className="h-full w-full border-0 bg-white"
+                    allow="cross-origin-isolated; clipboard-read; clipboard-write;"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-muted-foreground bg-background">
+                    Initializing preview URL...
+                  </div>
+                )}
+              </div>
 
               {/* Code tab — custom file tree + viewer */}
               {tab === "code" && (
@@ -491,16 +655,8 @@ export function PreviewPanel({
         </div>
       </div>
 
-      <NetlifyDeployDialog
-        open={netlifyOpen}
-        onClose={() => setNetlifyOpen(false)}
-        files={files}
-      />
-      <VercelDeployDialog
-        open={vercelOpen}
-        onClose={() => setVercelOpen(false)}
-        files={files}
-      />
+      <NetlifyDeployDialog open={netlifyOpen} onClose={() => setNetlifyOpen(false)} files={files} />
+      <VercelDeployDialog open={vercelOpen} onClose={() => setVercelOpen(false)} files={files} />
     </div>
   );
 }
