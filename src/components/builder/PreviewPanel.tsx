@@ -21,6 +21,7 @@ import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 import { VercelDeployDialog } from "./VercelDeployDialog";
 import sdk, { type VM } from "@stackblitz/sdk";
 import { MODES, type ChatMode } from "@/lib/modes";
+import { safeEmbedProject } from "@/lib/webcontainer";
 
 interface Props {
   files: Record<string, string>;
@@ -76,9 +77,10 @@ function withDefaultConfig(files: Record<string, string>): Record<string, string
         version: "0.0.0",
         type: "module",
         scripts: {
-          dev: "vite --host",
-          build: "tsc && vite build",
-          preview: "vite preview",
+          dev: "vite --host 0.0.0.0 --port 5173",
+          build: "tsc --noEmit && vite build",
+          preview: "vite preview --host 0.0.0.0",
+          start: "vite --host 0.0.0.0",
         },
         dependencies: {
           react: "^18.3.1",
@@ -169,8 +171,10 @@ export function PreviewPanel({
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   // StackBlitz WebContainer preview state
-  const [sbState, setSbState] = useState<"idle" | "embedding" | "ready" | "error">("idle");
+  const [sbState, setSbState] = useState<"idle" | "embedding" | "building" | "ready" | "error">("idle");
   const [sbError, setSbError] = useState<string | null>(null);
+  const [buildOutput, setBuildOutput] = useState<string[]>([]);
+  const [showTerminal, setShowTerminal] = useState(false);
 
   const vmRef = useRef<VM | null>(null);
   const embedContainerRef = useRef<HTMLDivElement | null>(null);
@@ -250,7 +254,8 @@ export function PreviewPanel({
         target.style.width = "100%";
         container.appendChild(target);
 
-        const vm = await sdk.embedProject(
+        setSbState("building");
+        const { vm: embeddedVm, error: embedError } = await safeEmbedProject(
           target,
           {
             title: "Live Preview",
@@ -265,16 +270,24 @@ export function PreviewPanel({
             hideNavigation: true,
             hideDevTools: true,
             hideExplorer: true,
-            terminalHeight: 0,
+            terminalHeight: showTerminal ? 25 : 0,
             showSidebar: false,
             clickToLoad: false,
           },
         );
 
+        if (embedError || !embeddedVm) {
+          if (active) {
+            setSbError(embedError || "Failed to initialize WebContainer");
+            setSbState("error");
+          }
+          return;
+        }
+
         if (!active) return;
-        vmRef.current = vm;
+        
+        vmRef.current = embeddedVm;
         mountedFilesRef.current = { ...normalizedFiles };
-        setSbState("ready");
       } catch (err) {
         console.error("StackBlitz embed failed:", err);
         if (active) {
@@ -306,7 +319,9 @@ export function PreviewPanel({
       return `Working on ${modeDef.label.toLowerCase()}…`;
     }
     if (sbState === "embedding")
-      return "Booting in-browser development server (this may take a few seconds)...";
+      return "Initializing WebContainer runtime...";
+    if (sbState === "building")
+      return "Starting dev server and compiling (this may take 10-30 seconds)...";
     return hasFiles ? "Updating your app..." : "Generating your app...";
   };
 
@@ -372,6 +387,17 @@ export function PreviewPanel({
           <span className="hidden rounded-md border border-border/60 bg-background/40 px-2 py-0.5 text-[10px] uppercase tracking-wider text-muted-foreground lg:inline">
             {hasFiles ? `${Object.keys(files).length} files` : "Idle"}
           </span>
+          {isSandbox && sbState === "ready" && (
+            <button
+              onClick={() => setShowTerminal(!showTerminal)}
+              aria-label="Toggle terminal"
+              title="Toggle terminal output"
+              className="flex h-8 items-center justify-center gap-1.5 rounded-full border border-border/60 bg-background/40 px-2.5 text-[11px] font-medium text-foreground/80 transition-colors hover:bg-background/70"
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${showTerminal ? "bg-emerald-400" : "bg-muted-foreground/50"}`} />
+              <span className="hidden sm:inline">Term</span>
+            </button>
+          )}
           <button
             onClick={handleGithub}
             aria-label="Open on GitHub"
@@ -439,10 +465,18 @@ export function PreviewPanel({
                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive">
                   <Triangle className="h-6 w-6" />
                 </div>
-                <h2 className="text-base font-semibold text-foreground">Preview Error</h2>
+                <h2 className="text-base font-semibold text-foreground">WebContainer Preview Error</h2>
                 <p className="mt-1.5 text-xs text-muted-foreground text-center">
-                  Failed to start the preview environment. Your browser may not support the embedded
-                  WebContainer runtime, or third-party cookies are restricted.
+                  Failed to initialize the WebContainer runtime. This typically happens when:
+                </p>
+                <ul className="mt-2 text-xs text-muted-foreground text-left">
+                  <li>• Your browser doesn&apos;t support WebContainer (use Chrome, Edge, or Firefox)</li>
+                  <li>• Third-party cookies are blocked</li>
+                  <li>• You&apos;re in a restricted browsing context (private/incognito)</li>
+                  <li>• JavaScript is disabled</li>
+                </ul>
+                <p className="mt-3 text-xs text-muted-foreground">
+                  You can still download the project and run it locally using <code className="text-foreground/60">npm run dev</code>.
                 </p>
                 {sbError && (
                   <pre className="mt-3 max-h-32 overflow-auto rounded bg-background/50 p-2 text-left font-mono text-[10px] text-destructive-foreground">
