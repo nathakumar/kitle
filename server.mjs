@@ -9,11 +9,18 @@ const host = '0.0.0.0';
 const server = createServer(async (req, res) => {
   try {
     // Convert Node.js request to Web API Request
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    
+    // For GET/HEAD requests, don't include a body
+    let body = null;
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      body = req;
+    }
+    
     const request = new Request(url, {
       method: req.method,
       headers: req.headers,
-      body: req.method !== 'GET' && req.method !== 'HEAD' ? req : null,
+      body,
     });
 
     // Call the Fetch API handler
@@ -24,22 +31,22 @@ const server = createServer(async (req, res) => {
 
     // Stream the response body
     if (response.body) {
-      const reader = response.body.getReader();
       try {
+        const reader = response.body.getReader();
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          res.write(value);
+          res.write(Buffer.from(value));
         }
-      } finally {
-        reader.releaseLock();
+      } catch (streamError) {
+        console.error('Stream error:', streamError);
       }
     }
     res.end();
   } catch (error) {
     console.error('Server error:', error);
     res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Internal Server Error');
+    res.end('Internal Server Error\n' + error.message);
   }
 });
 
